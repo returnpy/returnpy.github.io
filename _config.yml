@@ -65,7 +65,6 @@ nav:
     - {title: 所有文章, description: archive, url: '/archive'}   
     - {title: 标签, description: tags, url: '/tags'}      
     - {title: 关于我, description: 简历戳这里, url: '/about'}      
-    - {title: 常用工具, description: 简历戳这里, url: '/about'}      
     
 
 # Pagination
