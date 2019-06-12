@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+
+  <title>Redis从入门到精通</title>
+  <meta name="description" content="Redis">
+  <meta name="author" content="leopardpan">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="Redis从入门到精通">
+  <meta name="twitter:description" content="Redis">
+  
+  <meta property="og:type" content="article">
+  <meta property="og:title" content="Redis从入门到精通">
+  <meta property="og:description" content="Redis">
+  
+  <link rel="icon" type="image/png" href="/images/favicon.png" />
+  <link href="/images/favicon.png" rel="shortcut icon" type="image/png">
+  
+  <link rel="stylesheet" href="/css/main.css">
+  <link href="//netdna.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet">
+
+  <link rel="canonical" href="http://localhost:4000/2019/04/Redis/">
+  <link rel="alternate" type="application/rss+xml" title="Nicky" href="http://localhost:4000/feed.xml">
+  
+  <meta name="google-site-verification" content="1-1ZlHoRvM0T2FqPbW2S-qLgYXN6rsn52kErlMPd_gw" />
+
+<!-- 站点统计 -->
+  <script 
+  async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js">
+  </script>  
+
+<!-- 百度统计 -->
+  
+  <script>
+      var _hmt = _hmt || [];
+      (function() {
+        var hm = document.createElement("script");
+        hm.src = "//hm.baidu.com/hm.js?c58b1ad83a64dd64e933ae10aab48e89";
+        var s = document.getElementsByTagName("script")[0]; 
+        s.parentNode.insertBefore(hm, s);
+      })();
+  </script>
+  
+
+<!-- google 统计 -->
+  
+
+  <script async src="//pagead2.googlesyndication.com/pagead/js/adsbygoogle.js"></script>
+<script>
+  (adsbygoogle = window.adsbygoogle || []).push({
+    google_ad_client: "ca-pub-9005224472374751",
+    enable_page_level_ads: true
+  });
+</script>
+
+</head>
+
+
+  <body>
+
+    <span class="mobile btn-mobile-menu">        
+      <div class="nav_container">
+         <nav class="nav-menu-item" style = "float:right">
+            <i class="nav-menu-item">
+              <a href="/#blog" title="" class="blog-button">  博客主页
+              </a>
+            </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/archive" title="archive" class="btn-mobile-menu__icon">
+                      所有文章
+                  </a>
+                </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/tags" title="tags" class="btn-mobile-menu__icon">
+                      标签
+                  </a>
+                </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/about" title="简历戳这里" class="btn-mobile-menu__icon">
+                      关于我
+                  </a>
+                </i>
+            
+                <i class="nav-menu-item">
+
+                  <a href="/about" title="简历戳这里" class="btn-mobile-menu__icon">
+                      常用工具
+                  </a>
+                </i>
+            
+          </nav>
+      </div>
+    </span>
+    
+    <header class="panel-cover panel-cover--collapsed" style="background-image: url('/images/background-cover.jpg')">
+  <div class="panel-main">
+
+    <div class="panel-main__inner panel-inverted">
+    <div class="panel-main__content">
+        <!-- 头像效果-start -->
+        <div class="ih-item circle effect right_to_left">            
+            <a href="/#blog" title="前往 Nicky 的主页" class="blog-button">
+                <div class="img"><img src="/images/avatar.jpg" alt="img"></div>
+                <div class="info">
+                    <div class="info-back">
+                        <h2> 
+                            
+                                Nicky
+                            
+                        </h2>
+                        <p>
+                           
+                                Python / 全栈开发
+                            
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <!-- 头像效果-end -->
+        <h1 class="panel-cover__title panel-title"><a href="/#blog" title="link to homepage for Nicky" class="blog-button">Nicky</a></h1>
+        
+        <span class="panel-cover__subtitle panel-subtitle">个人站</span>
+        
+        <hr class="panel-cover__divider" />
+        <p class="panel-cover__description">I Believe I Can.</p>
+        <hr class="panel-cover__divider panel-cover__divider--secondary" />
+        
+        
+        
+
+        <div class="navigation-wrapper">
+          <div>
+            <nav class="cover-navigation cover-navigation--primary">
+              <ul class="navigation">
+                <li class="navigation__item"><a href="/#blog" title="" class="blog-button">博客主页</a></li>
+                
+                  <li class="navigation__item"><a href="/archive" title="archive">所有文章</a></li>
+                
+                  <li class="navigation__item"><a href="/tags" title="tags">标签</a></li>
+                
+                  <li class="navigation__item"><a href="/about" title="简历戳这里">关于我</a></li>
+                
+                  <li class="navigation__item"><a href="/about" title="简历戳这里">常用工具</a></li>
+                
+              </ul>
+            </nav>
+          </div>          
+        </div>
+
+
+        </div>
+      </div>
+    </div>
+    
+    
+    <div class="panel-cover--overlay cover-clear"></div>
+    
+  </div>
+</header>
+
+
+    <div class="content-wrapper">
+        <div class="content-wrapper__inner">
+            <article class="post-container post-container--single" itemscope itemtype="http://schema.org/BlogPosting">
+  <header class="post-header">
+    <h1 class="post-title">Redis从入门到精通</h1>
+    <div class="post-meta">
+      <img src="/images/calendar.png" width="20px"/> 
+      <time datetime="2019-04-28 00:00:00 +0800" itemprop="datePublished" class="post-meta__date date">2019-04-28</time>  
+         
+      <span id="busuanzi_container_page_pv"> | 阅读：<span id="busuanzi_value_page_pv"></span>次</span>
+    </p>
+    </div>
+  </header>
+
+  <section class="post">
+    <h2 id="redis">Redis</h2>
+
+<p>redis是一个使用c语言编写基于BSD协议开源的一个高性能的Key-Value的NoSQL数据库</p>
+
+<p>特点是以key: value形式存储基于内存(速度快、掉电易失)，支持持久化</p>
+
+<p>可以理解为redis提供的就是一个大字典，相当于字典套字典</p>
+
+<p>Redis中常用的数据结构：string、hashes 、list、sets、sorted sets、bitmaps</p>
+
+<p>丰富的编程接口支持，主流语言基本都支持</p>
+
+<p>用途：缓存、数据库、消息中间件(消息队列)</p>
+
+<h2 id="redis-安装">Redis 安装</h2>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>安装依赖
+SET key value <span class="o">[</span>EX] <span class="o">[</span>PX] <span class="o">[</span>NX]
+<span class="c"># yum -y install gcc tcl</span>
+
+<span class="c"># tar xf redis.tar.gz</span>
+<span class="c"># cd redis</span>
+<span class="c"># make</span>
+</code></pre></div></div>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>如果出错，需要到redis目录下面编译需求文件
+<span class="c"># cd deps</span>
+make je lu line hir
+</code></pre></div></div>
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>安装
+创建安装文件夹
+<span class="nb">mkdir</span> <span class="nt">-p</span> /ruanjian/redis
+<span class="c"># make install</span>
+默认安装到/usr/local/bin
+<span class="c"># make PREFIX=/ruanjian/redis install</span>
+</code></pre></div></div>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>环境变量
+~/.bash_profile
+export REDIS_HOME=/ruanjian/redis
+export PATH=$REDIS_HOME/bin
+</code></pre></div></div>
+
+<p>Redis服务</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>查看redis-server启动命令
+<span class="c"># redis-server --help</span>
+redis中的utils目录
+<span class="c"># ./install_server.sh</span>
+配置文件/etc/redis/6379.conf
+修改文件名
+<span class="c"># mv /etc/init.d/redis_6379 /etc/init.d/redisd</span>
+开机启动
+<span class="c"># chkconfig redisd on</span>
+修改配置文件后，启动redis服务
+<span class="c"># service redisd start</span>
+<span class="c"># service redisd start | stop | restart | status</span>
+<span class="c"># ss -tanl</span>
+
+</code></pre></div></div>
+
+<p>使用install_server.sh脚本生成的redis配置文件为/etc/redis/6379.conf</p>
+
+<p>redis 3.x 版本增加了bind，不设置在本地所有网络端口监听</p>
+
+<p>bind 192.168.1.1 127.0.0.1</p>
+
+<p>redis 3.x 版本增加了保护模式，默认开启</p>
+
+<ul>
+  <li>开启保护模式时，如果不使用bind绑定ip地址，或者不使用密码，那么只能本地访问或使用unix socket文件</li>
+</ul>
+
+<p>protected-mode yes</p>
+
+<p>后台服务
+daemonize yes
+prot 6379</p>
+
+<h2 id="redis数据模型">Redis数据模型</h2>
+
+<p>redis支持的数据模型非常丰富</p>
+
+<h3 id="key">Key</h3>
+
+<ul>
+  <li>Redis Key 值是二进制安全的，这以为着可以用任何二进制序列作为Key值，从形如”foo”的简单字符串到一个jpg文件的内容都可以，空字符串也是有效Key值</li>
+  <li>Key的取值原则
+    <ul>
+      <li>键值不需要太长，消耗内存，而且查找这类键值的计算成本很高</li>
+      <li>键值不宜过短，可读性太差</li>
+      <li>习惯上Key采用’user:123:password’形式,表示用户id为123用户的密码</li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="字符串">字符串</h3>
+
+<ul>
+  <li>字符串是一种最基本简单的Redis值类型。Redis字符串是二进制安全的，这以为着一个Redis字符串能包含任意类型的数据，例如：一张jpg格式的图片或者一个序列化的Ruby对象</li>
+  <li>一个字符串类型的值最多能存储512M字节的内容</li>
+  <li>本质上可以认为它是二进制的字节序列</li>
+  <li>几乎所有数据都可以转成二进制的字节序列保存在redis中，只不过受限于第二条</li>
+</ul>
+
+<h3 id="python-中的redis编程">Python 中的redis编程</h3>
+
+<ul>
+  <li>安装redis库
+    <ul>
+      <li>pip install redis</li>
+    </ul>
+  </li>
+</ul>
+
+<p>redis 数值会先转化成10进制64位有符号数后，在转化成字符串，存入redis中</p>
+
+<h3 id="redis帮助">Redis帮助</h3>
+
+<p>help</p>
+
+<h3 id="字符串设置">字符串设置</h3>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SET key value [EX] [PX] [NX|XX]
+
+EX设置过期时间，秒
+
+PX设置过期时间，毫秒
+
+NX键不存在时，才能设置
+
+XX键存在是，才能设置
+
+MSET key value
+
+设置多个键的字符串值，key存在则覆盖，key不存在则增加
+
+MSETNX不存在则设置，key存在则失败。nx指不存在。
+
+原子操作
+</code></pre></div></div>
+
+<h3 id="过期操作和生存时间">过期操作和生存时间</h3>
+
+<p>Redis中可以给每个Key设置一个生存时间(秒、毫秒),当达到这个时长后，这些键值会被自动删除</p>
+
+<p>设置多长时间过期</p>
+
+<p>设置到达什么时间戳过期</p>
+
+<p>持久Key不过期</p>
+
+<h3 id="适用场景">适用场景</h3>
+
+<ol>
+  <li>多少秒过期，例如一个缓存失效
+    <ul>
+      <li>EXPIPE key 20 — key20s后过期</li>
+      <li>PERSIST key — key不过期</li>
+    </ul>
+  </li>
+  <li>
+    <p>过期时间戳，比如从现在开始缓存数据，到0点以后失效</p>
+
+    <p>​	TTL、PTTL 查看key的剩余时间</p>
+
+    <ol>
+      <li>
+        <p>key存在但没有设置TTL，返回-1 — 不过期</p>
+      </li>
+      <li>
+        <p>key存在，但还在生存期内，返回剩余时间</p>
+      </li>
+      <li>
+        <p>key曾经存在，但已经消亡，返回-2 ( 2.8版本之前返回-1 )</p>
+      </li>
+    </ol>
+  </li>
+</ol>
+
+<h3 id="key操作">Key操作</h3>
+
+<p>keys pattern</p>
+
+<p>pattern可以取值如下：</p>
+
+<ol>
+  <li>*任意长度字符</li>
+  <li>?任意一个字符</li>
+  <li>[ ]字符集合，表示一个字符</li>
+</ol>
+
+<p>TYPE key 判断key类型</p>
+
+<p>exists key 判断key是否存在</p>
+
+<p>rename key newkey 给key改一个新名字、renamenx key newkey</p>
+
+<p>del key 删除key</p>
+
+<h3 id="字符串获取">字符串获取</h3>
+
+<p>getset key value 取key的value，然后用本次的value覆盖旧的value</p>
+
+<p>strlen key 求value的长度</p>
+
+<h3 id="字符串操作">字符串操作</h3>
+
+<p>append key value 给key对应的value追加value</p>
+
+<p>getrange key start end 相当于Python切片，区别(前后包)!!!</p>
+
+<p>getrange key 0 -1全拿到 相当于Python[ 0: ]</p>
+
+<p>setrange key offset value 从offset开始把value存放进去，如果超出去就算追加，如果不存在会创建一个新的，offset之前的值补\x00</p>
+
+<p>incr key：value值减1</p>
+
+<p>decr key ：value值加1</p>
+
+<p>incrby key increment：value值加increment</p>
+
+<p>incrby key increment：value值减decrement</p>
+
+<h2 id="库操作">库操作</h2>
+
+<p>redis-cli -n num 可以选择库号</p>
+
+<p>flushdb 清除当前库的数据</p>
+
+<p>flushall 清除所有库中的数据</p>
+
+<h3 id="位图-bitmap">位图 bitmap</h3>
+
+<p>位图不是一个真正的数据类型，它是定义在string类型上，只不过把string按位操作</p>
+
+<p>一个字符串类型的值最多能存储512M字节的内容，可以表示$2^{32}$,接近43亿</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>SETBIT key offset value 设置某一位上的值，offset偏移量，从0开始，value不写，默认是0
+
+GETBIT key bit [start] [end] 获取某一位上的值
+
+BITPOS key bit [start] [end] ------------------------------------------------------
+
+BITCOUNT key [start] [end] 统计指定区间上的值为1的个数
+
+从左往右从0开始，从右往左从-1开始，start、end官方说是按位，其实是字节
+
+BITCOUNT testkey 0 0 **表示从索引为0的字节到索引为0的字节，就是统计第一个字节**
+
+BITCOUNT testkey 0 -1 等同于 BITCOUNT testkey ，就是从头到尾统计一遍
+
+最常用的就是BITCOUNT testkey
+</code></pre></div></div>
+<h2 id="位操作">位操作</h2>
+
+<p>对一个或多个保存二进制的string key进行位元操作，并将结果保存到destkey上</p>
+
+<p>operation可以是AND、OR、NOT、XOR这四种操作中的任意一种</p>
+
+<p>BITOP AND destkey key [key …],对一个或多个key求逻辑并，并将结果保存到destkey</p>
+
+<p>BITOP NOT destkey key,对给定key求逻辑非，并将结果保存到desktop</p>
+
+<p>除了NOT操作之外，其他操作都可以接受一个或多个key作为输入</p>
+
+<p>当BITOP处理不同长度的字符串时，较短的字符串缺失部分会按0处理</p>
+
+<p>空的key可被看作是包含0的字符串序列</p>
+
+<p>‘a’ 位或 ‘b’结果是’c’</p>
+
+<h2 id="练习">练习</h2>
+
+<ul>
+  <li>
+    <p>网站用户的上线次数统计</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>userid</th>
+          <th>userstatus(如果索引位置为1，表示该索引位置上的用户登录过)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1</td>
+          <td>在userkey上索引1的位置上标记1</td>
+        </tr>
+        <tr>
+          <td>105</td>
+          <td>在userkey上索引105的位置上标记1</td>
+        </tr>
+        <tr>
+          <td> </td>
+          <td>bitcount 可以查看有多少用户登录过，如果下线重置为0统计的就是当前在线用户</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>可以统计一天内登录过的用户，也可以统计当前在线用户</p>
+
+    <p>SETBIT user1 1 1 表示用户user1 在第一天登录过</p>
+
+    <p>SETBIT user1 30 1 表示用户user1 在第30天登录过</p>
+
+    <p>BITCOUNT user1 表示我要看该用户登录过的次数</p>
+  </li>
+  <li>
+    <p>统计网站活跃用户</p>
+
+    <p>统计用户最近的登录情况，如果频繁，就标记为活跃用户，如果不则反之</p>
+  </li>
+  <li>
+    <p>按天统计活跃用户</p>
+
+    <p>天作为key，用户ID为offset，上线置为1</p>
+
+    <p>求一段时间内活跃用户数</p>
+
+    <p>SETBIT 20190101 1 1 <strong>1号用户在2019年1月1号登录</strong></p>
+
+    <p>SETBIT 20190714 175 1 <strong>175号用户</strong></p>
+
+    <p>SETBIT 20191129 13948 1 <strong>13948号用户</strong></p>
+
+    <p>求2019年登录过的用户</p>
+
+    <p>BITOP OR 20190101-20191230</p>
+  </li>
+</ul>
+
+<h2 id="列表list">列表List</h2>
+
+<ul>
+  <li>其列表是基于双向列表实现，列表头尾增删快，中间增删慢</li>
+  <li>元素是字符串类型</li>
+  <li>元素可以重复出现</li>
+  <li>索引支持正索引和负索引，从左至右0开始，从右至左从-1开始</li>
+</ul>
+
+<table>
+  <thead>
+    <tr>
+      <th>字母</th>
+      <th>说明</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>B</td>
+      <td>Block阻塞</td>
+    </tr>
+    <tr>
+      <td>L</td>
+      <td>Left左起</td>
+    </tr>
+    <tr>
+      <td>R</td>
+      <td>Right右起</td>
+    </tr>
+    <tr>
+      <td>X</td>
+      <td>Exist存在</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+llen key 返回列表元素个数
+
+lpush key value [value ...] 从左边向队列中加入元素
+
+lpushx key value，要求key必须存在
+
+lpop key 从左边弹出列表中一个元素
+
+rpoplpush source destination 从源列表右边弹出添加到目标列表的左边
+
+lrange key start end 返回列表中指定访问的元素，例如lrange user 0 -1
+
+lindex key index，返回列表中指定索引的元素
+
+lset key index value 设置列表中指定索引位置的元素值，index不能超界
+
+LREM key count value 从左边删除列表中与value相等的元素
+
+count &gt; 0 从左至右搜索，移除与value相等的元素，数量至多为count次
+
+count &lt; 0 从右至左搜索，移除与value相等的元素，数量至多为-count次
+
+count = 0 移除列表中所有value值
+
+LTRIM key start stop 去除指定范围外的元素
+
+RPUSH listkey c abc c ab 123
+
+LTRIM listkey 0 -1 --- 什么都没有去除
+
+LTRIM listkey 1 -1 --- 去掉左边第一个
+
+LTRIM listkey 1 10000
+
+LINSERT key BEFORE | AFTER pivot value 在列表中某个存在的值(pivot) 前或者后插入元素一次，key或pivot不存在，不操作
+
+
+
+</code></pre></div></div>
+
+<h3 id="练习-1">练习</h3>
+
+<ul>
+  <li>微博某帖子的最后50条评论(就是最新的50条评论)</li>
+</ul>
+
+<table>
+  <thead>
+    <tr>
+      <th>title-id</th>
+      <th> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>1</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>200</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>3242</td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>23239</td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>LTRIM userid：titleid：comments 0 50</p>
+
+<h3 id="持久化方式">持久化方式</h3>
+
+<ul>
+  <li>Redis有两种持久化方式
+    <ul>
+      <li>RDB</li>
+      <li>AOF</li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="hash散列">hash散列</h3>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>值是由field和value组成的map键值对
+
+field和value都是字符串类型
+
+HSET key field value 设置单个字段。field不存在创建，存在覆盖value
+
+HSETNX key field value 设置单个字段，要求field不存在。如果key不存在，相当于field也不存在
+
+HMSET key field value [field value] 设置多个字段
+
+HLEN key 返回字段个数
+
+HEXISTS key field 判断字段是否存在。key或者field不存在，返回0
+
+HGET key field 返回字段值
+
+HMGET key field [field ...] 返回多个字段值
+
+HGETALL key 返回所有的键值对
+
+HKEYS key 返回所有字段名
+
+HVALS key 返回所有值
+</code></pre></div></div>
+<h4 id="hash用途">hash用途</h4>
+
+<ul>
+  <li>节约内存空间</li>
+  <li>每创建一个键，它都会为这个键存储一些附加的管理信息(比如这个键的类型，这个键最后一次被访问的时间等)</li>
+  <li>hash适合封装对象</li>
+</ul>
+
+<h4 id="不适合hash的情况">不适合hash的情况</h4>
+
+<ul>
+  <li>使用二进制位操作命令：因为Redis目前支持对字符串键进行SETBIT、GETBIT、BITOP等操作，如果你想使用这些操作，那么只能使用字符串键，虽然散列也能保存二进制数据</li>
+  <li>使用过期键功能：Redis的键过期功能目前只能对键进行过期操作，而不能对散列的字段进行过期操作，因此如果你要对键值对数据使用过期功能的话，那么只能把键值对存储在字符串里面</li>
+</ul>
+
+<h4 id="hash练习">hash练习</h4>
+
+<ul>
+  <li>
+    <p>用户维度统计</p>
+
+    <ul>
+      <li>
+        <p>统计包括 被关注的人数、粉丝数、喜欢的商品数、发帖数</p>
+      </li>
+      <li>
+        <p>用户为key，不同维度为Field，value为统计数
+HSET user: 13324 follow 5  —  用户13324的被关注数为5</p>
+
+        <p>HINCRBY: user: 13324 follow 1 — 又有一个粉丝关注了13325</p>
+      </li>
+    </ul>
+  </li>
+  <li>商品维度统计
+    <ul>
+      <li>统计包括 喜欢数、评论数、购买数、浏览数等</li>
+      <li>HSET item: 5342 fav 500  — 有五百人收藏了商品5342</li>
+      <li>HINCRBY: item: 5342 fav 1 — 又有一个用户收藏了商品5342</li>
+    </ul>
+  </li>
+  <li>缓存用户信息
+    <ul>
+      <li>登录后，反复需要读取用户的常用信息，最好的方式就是缓存起来</li>
+      <li>HMSET user:001 name “Nicky” age 18 birthday “20190101”</li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="集合set">集合Set</h3>
+
+<ul>
+  <li>集合的元素是无序的、去重的，元素是字符串类型</li>
+  <li>SADD key member [member …] 增加一个或多个元素，元素已存在将忽略</li>
+  <li>SREM key member [member …] 移除一个或多个元素，元素不存在自动忽略</li>
+  <li>SCARD key 返回集合中元素的个数，不需要遍历</li>
+  <li>SMEMBER — 数据体量大的情况下禁止使用</li>
+  <li>SRANDMEMBER key [num] 随机取num个数据，num为负可以取到重复数据</li>
+  <li>SISMEMBER key member 元素是否是在集合中</li>
+  <li><strong>元素相同的两个集合，未必有相同的顺序。想要去重且有序可使用有序集合</strong></li>
+  <li>SPOP key 从集合中随机移除一个元素并返回该元素</li>
+  <li>SMOVE source destination member 把元素从源集合移动到目标集合</li>
+</ul>
+
+<p>结合运算</p>
+
+<ul>
+  <li>差集
+    <ul>
+      <li>SDIFF key [key …] 从第一个key的集合中去除其他集合和自己交集部分</li>
+      <li>SDIFFSTORE destination key [key …] 将差集结果存储在目标key中</li>
+    </ul>
+  </li>
+  <li>交集
+    <ul>
+      <li>SINTER key [key …] 取所有集合交集部分</li>
+      <li>SINTERSTORE destination key [key …] 将交集结果存储在目标key中</li>
+    </ul>
+  </li>
+  <li>
+    <p>并集</p>
+
+    <ul>
+      <li>SUNION key [key …] 取所有集合的并集</li>
+      <li>SINTERSTORE destination key [key …] 讲并集结果存储在目标key中</li>
+    </ul>
+  </li>
+  <li>
+    <p>练习</p>
+
+    <ul>
+      <li>
+        <p>微博的共同关注</p>
+      </li>
+      <li>
+        <p>需求分析：当用户访问另一个用户的时候，会显示出两个用户共同关注的好友</p>
+      </li>
+      <li>
+        <p>项目设计：将每个用户关注的用户放在集合中，求交集即可</p>
+      </li>
+      <li>
+        <p>代码实现：</p>
+
+        <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">peter</span> <span class="o">=</span> <span class="p">{</span><span class="s">'nicky'</span><span class="p">,</span> <span class="s">'tom'</span><span class="p">,</span> <span class="s">'jerry'</span><span class="p">}</span>
+<span class="n">ben</span> <span class="o">=</span> <span class="p">{</span><span class="s">'nicky'</span><span class="p">,</span> <span class="s">'may'</span><span class="p">,</span> <span class="s">'alex'</span><span class="p">}</span>
+<span class="n">SINTER</span> <span class="n">peter</span> <span class="n">ben</span> <span class="err">结果为</span><span class="p">{</span><span class="s">'nicky'</span><span class="p">}</span>
+</code></pre></div>        </div>
+      </li>
+    </ul>
+  </li>
+</ul>
+
+<h3 id="有序集合sortedset">有序集合SortedSet</h3>
+
+<ul>
+  <li>
+    <p>类似Set集合，有序的集合</p>
+  </li>
+  <li>
+    <p>每一个元素都关联着一个浮点数分值(Score),并按照分值从小到大的顺序排列集合中的元素。分值可以相同</p>
+  </li>
+  <li>
+    <p>一个保存了水果价格的有序集合</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>分值</th>
+          <th>2.0</th>
+          <th>3.2</th>
+          <th>4.0</th>
+          <th>6.8</th>
+          <th>7.0</th>
+          <th>9.2</th>
+          <th>12.0</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>元素</td>
+          <td>西瓜</td>
+          <td>香蕉</td>
+          <td>番石榴</td>
+          <td>芒果</td>
+          <td>梨</td>
+          <td>葡萄</td>
+          <td>苹果</td>
+        </tr>
+      </tbody>
+    </table>
+  </li>
+  <li>
+    <p>一个保存了员工薪水的有序集合</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>分值</th>
+          <th>3500.0</th>
+          <th>4000.0</th>
+          <th>4500.00</th>
+          <th>5000.0</th>
+          <th>25000.0</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>元素</td>
+          <td>jack</td>
+          <td>john</td>
+          <td>peter</td>
+          <td>tom</td>
+          <td>david</td>
+        </tr>
+      </tbody>
+    </table>
+  </li>
+  <li>
+    <p>一个有序集合，保存了正在阅读某些技术书的人数</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>分值</th>
+          <th>251</th>
+          <th>347</th>
+          <th>928</th>
+          <th>1030</th>
+          <th>3436</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>元素</td>
+          <td>编程人生</td>
+          <td>人月神话</td>
+          <td>设计模式</td>
+          <td>深入计算机系统</td>
+          <td>算法导论</td>
+        </tr>
+      </tbody>
+    </table>
+  </li>
+</ul>
+
+<h4 id="练习-2">练习</h4>
+
+<ul>
+  <li>音乐排行榜
+    <ul>
+      <li>需求分析：歌名会冲突，所以用id作为元素，每首歌的播放次数作为分值</li>
+      <li>ZREVRANGE来获取播放次数最多的歌曲</li>
+    </ul>
+  </li>
+  <li>新浪微博翻页
+    <ul>
+      <li>时间戳作为分值</li>
+      <li>ZREVRANGE blog 10 20</li>
+      <li>显示所有博客中的最后的指定条目</li>
+    </ul>
+  </li>
+  <li>京东图书畅销榜
+    <ul>
+      <li>统计单日榜，计算出周榜，月榜，年榜</li>
+      <li>统计到目前为止，图书的销售量</li>
+    </ul>
+  </li>
+</ul>
+
+
+  </section>
+</article>
+
+<section>
+
+            <div class="content-play">
+              <p><a href="javascript:void(0)" onclick="dashangToggle()" class="dashang" title="打赏，支持一下">打赏一个呗</a></p>
+              <div class="hide_box-play"></div>
+              <div class="shang_box-play">
+                <a class="shang_close-play" href="javascript:void(0)" onclick="dashangToggle()" title="关闭"><img src="/images/payimg/close.jpg" alt="取消" /></a>
+                <div class="shang_tit-play">
+                  <p>感谢您的支持，我会继续努力的!</p>
+                </div>
+                <div class="shang_payimg">
+                    <img src="/images/payimg/alipayimg.jpg" alt="扫码支持" title="扫一扫" />
+                </div>
+              <div class="shang_payimg">    
+                    <img src="/images/payimg/weipayimg.jpg" alt="扫码支持" title="扫一扫" />
+                </div>
+                <div class="pay_explain">扫码打赏，你说多少就多少</div>
+                <div class="shang_payselect">
+                  <div class="pay_item checked" data-id="alipay">
+                    <span class="pay_logo"><img src="/images/payimg/alipay.jpg" alt="支付宝" /></span>
+                  </div>
+                  <div class="pay_item" data-id="weipay">
+                    <span class="pay_logo"><img src="/images/payimg/wechat.jpg" alt="微信" /></span>
+                  </div>
+                </div>
+                <div class="shang_info-play">
+                  <p>打开<span id="shang_pay_txt">支付宝</span>扫一扫，即可进行扫码打赏哦</p>
+                </div>
+              </div>
+            </div>
+            <script type="text/javascript">
+            function dashangToggle(){
+              $(".hide_box-play").fadeToggle();
+              $(".shang_box-play").fadeToggle();
+            }
+            </script>
+
+            <div style="text-align:center;margin:50px 0; font:normal 14px/24px 'MicroSoft YaHei';"></div>
+
+            <style type="text/css">
+              .content-play{width:80%;margin-top: 20px;margin-bottom: 10px;height:40px;}
+              .hide_box-play{z-index:999;filter:alpha(opacity=50);background:#666;opacity: 0.5;-moz-opacity: 0.5;left:0;top:0;height:99%;width:100%;position:fixed;display:none;}
+              .shang_box-play{width:540px;height:540px;padding:10px;background-color:#fff;border-radius:10px;position:fixed;z-index:1000;left:50%;top:50%;margin-left:-280px;margin-top:-280px;border:1px dotted #dedede;display:none;}
+              .shang_box-play img{border:none;border-width:0;}
+              .dashang{display:block;width:100px;margin:5px auto;height:25px;line-height:25px;padding:10px;background-color:#E74851;color:#fff;text-align:center;text-decoration:none;border-radius:10px;font-weight:bold;font-size:16px;transition: all 0.3s;}
+              .dashang:hover{opacity:0.8;padding:15px;font-size:18px;}
+              .shang_close-play{float:right;display:inline-block;
+                margin-right: 10px;margin-top: 20px;
+              }
+              .shang_logo{display:block;text-align:center;margin:20px auto;}
+              .shang_tit-play{width: 100%;height: 75px;text-align: center;line-height: 66px;color: #a3a3a3;font-size: 16px;background: url('/images/payimg/cy-reward-title-bg.jpg');font-family: 'Microsoft YaHei';margin-top: 7px;margin-right:2px;}
+              .shang_tit-play p{color:#a3a3a3;text-align:center;font-size:16px;}
+              .shang_payimg{width:140px;padding:10px;padding-left: 80px; /*border:6px solid #EA5F00;**/margin:0 auto;border-radius:3px;height:140px;display:inline-block;}
+              .shang_payimg img{display:inline-block;margin-right:10px;float:left;text-align:center;width:140px;height:140px; }
+              .pay_explain{text-align:center;margin:10px auto;font-size:12px;color:#545454;}
+              .shang_payselect{text-align:center;margin:0 auto;margin-top:40px;cursor:pointer;height:60px;width:500px;margin-left:110px;}
+              .shang_payselect .pay_item{display:inline-block;margin-right:140px;float:left;}
+              .shang_info-play{clear:both;}
+              .shang_info-play p,.shang_info-play a{color:#C3C3C3;text-align:center;font-size:12px;text-decoration:none;line-height:2em;}
+            </style>
+
+       <ul class="pager">
+        
+        <li class="previous">
+            <a href="/2019/02/Python%E7%88%AC%E8%99%AB/" data-toggle="tooltip" data-placement="top" title="Python爬虫开发">上一篇：  <span>Python爬虫开发</span>
+            </a>
+        </li>
+        
+        
+        <li class="next">
+            <a href="/2019/05/Redis%E6%8C%81%E4%B9%85%E5%8C%96/" data-toggle="tooltip" data-placement="top" title="Redis持久化">下一篇：  <span>Redis持久化</span>
+            </a>
+        </li>
+        
+    </ul>
+</section>
+
+<section class="post-comments">
+
+  
+    <div id="disqus_thread"></div>
+    <script>
+    
+    var disqus_config = function () {
+        this.page.url = "http://localhost:4000/2019/04/Redis/";
+        this.page.identifier = "/2019/04/Redis/";
+    };
+    var disqus_shortname = 'leopard';
+    
+    (function() { // DON'T EDIT BELOW THIS LINE
+        var d = document, s = d.createElement('script');
+        s.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+        s.setAttribute('data-timestamp', +new Date());
+            (d.head || d.body).appendChild(s);
+        })();
+    </script>
+    <noscript>要查看<a href="http://disqus.com/?ref_noscript"> Disqus </a>评论，请启用 JavaScript</noscript>
+    
+
+  <!--  -->
+
+<!-- 来必力City版安装代码 -->
+<div id="lv-container" data-id="city" data-uid="MTAyMC80NDQ3NC8yMTAwNg==">
+	<script type="text/javascript">
+   (function(d, s) {
+       var j, e = d.getElementsByTagName(s)[0];
+
+       if (typeof LivereTower === 'function') { return; }
+
+       j = d.createElement(s);
+       j.src = 'https://cdn-city.livere.com/js/embed.dist.js';
+       j.async = true;
+
+       e.parentNode.insertBefore(j, e);
+   })(document, 'script');
+	</script>
+<noscript> 为正常使用来必力评论功能请激活JavaScript</noscript>
+</div>
+<!-- City版安装代码已完成 -->
+
+</section>
+
+
+            <section class="footer">
+    <footer>
+        <div class = "footer_div">  
+        <nav class="cover-navigation navigation--social">
+          <ul class="navigation">
+
+          
+          <!-- Github -->
+          <li class="navigation__item_social">
+            <a href="https://github.com/returnpy" title="@returnpy 的 Github" target="_blank">
+              <div class="footer-social-icon" style="background:url(/images/github.png);"></div>
+            </a>
+          </li>
+          
+
+          
+
+          
+
+          
+          <!-- Zhihu -->
+          <li class="navigation__item_social">
+            <a href="https://www.jianshu.com/u/18601011935" title="@18601011935" target="_blank">
+              <div class="footer-social-icon" style="background:url(/images/jianshu.png);"></div>
+            </a>
+          </li>
+
+          
+
+          
+          <!-- Weibo -->
+          <li class="navigation__item_social">
+            <a href="http://weibo.com/18601011935" title="@18601011935 的微博" target="_blank">
+              <div class="footer-social-icon" style="background:url(/images/weibo.png);"></div>
+            </a>
+          </li>
+          
+
+          
+          
+
+
+          
+          
+          <!-- RSS -->
+          <li class="navigation__item_social">
+            <a href="/feed.xml" rel="author" title="RSS" target="_blank">
+              <div class="footer-social-icon" style="background:url(/images/rss.png);"></div>
+              <span class="label">RSS</span>
+            </a>
+          </li>
+
+          </ul>
+        </nav>
+
+        </div>
+
+        <div class = "footer_div">  
+           <p class="copyright text-muted">
+            Copyright &copy; Nicky 2019 Theme by <a href="http://returnpy.github.io/">Nicky</a> |
+            <iframe
+                style="margin-left: 2px; margin-bottom:-5px;"
+                frameborder="0" scrolling="0" width="91px" height="20px"
+                src="https://ghbtns.com/github-btn.html?user=returnpy&repo=returnpy.github.io&type=star&count=true" >
+            </iframe>
+            </p>
+        	<div align="right">
+    			<link rel="stylesheet" href="//cdn.bootcss.com/font-awesome/4.3.0/css/font-awesome.min.css">
+
+          <!-- 访问统计 -->
+          <span id="busuanzi_container_site_pv">
+            本站总访问量
+            <span id="busuanzi_value_site_pv"></span>次
+          </span>
+
+        </div>
+        <div>
+    </footer>
+</section>
+
+        </div>
+    </div>
+    
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.11.3.min.js"></script>
+<script type="text/javascript" src="/js/main.js"></script>
+
+<script type="text/javascript" src="/js/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+
+    
+  </body>
+
+</html>
