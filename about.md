@@ -41,7 +41,7 @@ title:
 熟悉常用设计模式
 
 
-熟悉常用算法和数据结构，如Quicksort、Heapsort、Merge sort等
+熟悉常用算法和数据结构，如Quicksort、Heapsort、Mergesort等
 
 掌握数据采集、数据清洗、数据持久化、数据本地化、数据可视化等技术
 
@@ -55,7 +55,6 @@ title:
 
 熟悉Linux操作系统的使用，掌握linux的常用命令，
 
-### 
 
 
 <p> 
