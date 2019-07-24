@@ -1,14 +1,14 @@
 # Basic
 title: Nicky
 subtitle: 个人站
-description: If they can do it, so can you.
+description: "幸福就是猫吃鱼，狗吃肉，我在冰天雪地的小屋里敲代码 : )"
 # 头像里面的标题
 avatarTitle: Nicky
 # 头像里面的描述
 avatarDesc: Python / 全栈开发
 url: "http://returnpy.github.io"
 
-# Comment
+# Comment/
 comment:
     disqus: leopard
     # gitment: xxx // 需要修改 comments.html中的client_id和client_secret
@@ -68,7 +68,7 @@ nav:
     
 
 # Pagination
-gems: [jekyll-paginate,jekyll-sitemap]
+plugins: [jekyll-paginate,jekyll-sitemap]
 paginate: 10
 paginate_path: "page/:num/"
 

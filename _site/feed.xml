@@ -1,0 +1,1459 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Nicky</title>
+    <description>幸福就是猫吃鱼，狗吃肉，我在冰天雪地的小屋里敲代码 : )</description>
+    <link>http://localhost:4000/</link>
+    <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Wed, 24 Jul 2019 11:40:06 +0800</pubDate>
+    <lastBuildDate>Wed, 24 Jul 2019 11:40:06 +0800</lastBuildDate>
+    <generator>Jekyll v3.8.5</generator>
+    
+      <item>
+        <title>Redis集群</title>
+        <description>&lt;p&gt;Redis集群分为：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;主从复制&lt;/li&gt;
+  &lt;li&gt;高可用&lt;/li&gt;
+  &lt;li&gt;Redis集群
+    &lt;ul&gt;
+      &lt;li&gt;是一个无中心节点的兼具了主从、高可用、分片能力的分布式集群&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;主从&quot;&gt;主从&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;主从主要是为了减轻压力&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;高可用&quot;&gt;高可用&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;哨兵&lt;/li&gt;
+  &lt;li&gt;主从 哨兵监控主从，哨兵发现主挂了，投票成功后用从顶上去&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;redis集群&quot;&gt;Redis集群&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;没有主&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Sat, 25 May 2019 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2019/05/Redis%E9%9B%86%E7%BE%A4/</link>
+        <guid isPermaLink="true">http://localhost:4000/2019/05/Redis%E9%9B%86%E7%BE%A4/</guid>
+        
+        <category>Redis</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>Redis持久化</title>
+        <description>&lt;h2 id=&quot;redis-持久化&quot;&gt;Redis 持久化&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;持久化：将数据从掉电易失的内存存放到能够永久存储的设备上&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Redis服务是使用内存来存储数据，如果掉电、服务崩溃都会导致Redis中数据丢失，如有必要，可以持久化数据。&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Redis持久化方式：RDB(redis DB)、AOF(AppendOnlyFile)&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;rdb&quot;&gt;RDB&lt;/h3&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;- 在默认情况下，Redis将某时间点的数据库快照保存在名字为dump.rdb的二进制文件中
+- 自动：按照配置文件中的条件满足就执行BGSAVE
+- 手动：客户端发起SAVE、BGSAVE命令
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;配置&lt;/p&gt;
+
+    &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;save 900 1   900秒操作了一次自动保存
+save 300 10    300秒改动了10次自动保存
+save 60 10000    redis要满足在60秒内至少有1000个键被改动，会自动保存一次
+dbfilename dump.rdb
+dir /var/lib/redis/6379
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;    &lt;/div&gt;
+
+    &lt;p&gt;只要满足上面三个条件之一，就自动执行快照&lt;/p&gt;
+
+    &lt;p&gt;执行完后，时间计数器和次数计数器都会归零重新计数。这多个条件不是叠加效果&lt;/p&gt;
+
+    &lt;p&gt;SAVE命令：阻塞式命令，执行其间不响应客户端请求&lt;/p&gt;
+
+    &lt;p&gt;BGSAVE：非阻塞命令，执行其间还可以接受并处理客户端请求，会folk一个子进程创建RDB文件&lt;/p&gt;
+
+    &lt;p&gt;优点：&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;完全备份，不同时间的数据集备份可以做到多版本恢复&lt;/li&gt;
+      &lt;li&gt;紧凑的单一文件，方便网络传输，适合灾难恢复&lt;/li&gt;
+      &lt;li&gt;快照文件直接恢复，大数据集速度较AOF快&lt;/li&gt;
+    &lt;/ul&gt;
+
+    &lt;p&gt;缺点：&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;会丢失最近写入、修改的而未能持久化的数据&lt;/li&gt;
+      &lt;li&gt;folk过程非常耗时，会造成毫秒级不能响应客户端请求&lt;/li&gt;
+    &lt;/ul&gt;
+
+    &lt;p&gt;RDB备份策略&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;创建一个定时任务cron job，每小时或每天将dump.rdb复制到指定目录&lt;/li&gt;
+      &lt;li&gt;确保备份文件名称带有日期时间信息，便于管理和还原对应的时间点的快照版本&lt;/li&gt;
+      &lt;li&gt;定时任务删除过期的备份&lt;/li&gt;
+      &lt;li&gt;如果有必要，跨物理主机、跨机架、异地备份&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;aof&quot;&gt;AOF&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Append only file, 采用追加的方式保存，默认文件appendonly.aof&lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;记录所有的写操作命令，在服务启动的时候使用这些命令就可以还原数据库&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;AOF写入机制&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;
+        &lt;p&gt;AOF不能保证绝对不丢失数据&lt;/p&gt;
+
+        &lt;ul&gt;
+          &lt;li&gt;目前常见的操作系统中，执行系统调用write函数，将一些内容写入到某个文件中时，为了提高效率，系统通常不会直接将内容写入硬盘里面，而是先将内容放入一个内容缓冲区(buffer)里面，等到缓冲区被填满，或者用户执行fsync调用和fdatasync调用时才将存储在缓冲区里的内容真正的写入到硬盘里，未写入硬盘之前，数据可能会丢失&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;AOF磁盘写入策略&lt;/p&gt;
+
+        &lt;ul&gt;
+          &lt;li&gt;Always: 服务器每写入一个命令，就调用一次fdatasync， 将缓冲区里的内容写入到硬盘，这种模式下，服务器出现故障，也不会丢失任何已经成功执行的命令数据&lt;/li&gt;
+          &lt;li&gt;Everysec(默认): 服务器每一秒调用一次fdatasync，即使服务器出现故障，最多只丢失一秒钟内执行的命令数据&lt;/li&gt;
+          &lt;li&gt;No：服务器不主动调用fdatasync，由操作系统决定何时将缓冲区里面的命令写入硬盘。这种模式下，服务器遭遇意外停机时，丢失命令的数量是不确定的&lt;/li&gt;
+          &lt;li&gt;运行速度比较：第一种很慢，后两种都很快&lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;AOF重写机制&lt;/p&gt;
+
+        &lt;ul&gt;
+          &lt;li&gt;
+            &lt;p&gt;写操作越来越多的被记录，AOF文件会越来越大。Redis会合并写操作，以压缩AOF文件&lt;/p&gt;
+          &lt;/li&gt;
+          &lt;li&gt;
+            &lt;p&gt;合并重复的写操作，AOF会使用尽可能少的命令来记录&lt;/p&gt;
+          &lt;/li&gt;
+          &lt;li&gt;
+            &lt;p&gt;&lt;strong&gt;重写过程&lt;/strong&gt;&lt;/p&gt;
+
+            &lt;ol&gt;
+              &lt;li&gt;
+                &lt;p&gt;folk一个子进程负责重写AOF文件&lt;/p&gt;
+              &lt;/li&gt;
+              &lt;li&gt;
+                &lt;p&gt;子进程会创建一个临时文件写入AOF信息&lt;/p&gt;
+              &lt;/li&gt;
+              &lt;li&gt;
+                &lt;p&gt;父进程会开辟一个内容缓冲区接受新的写命令&lt;/p&gt;
+              &lt;/li&gt;
+              &lt;li&gt;
+                &lt;p&gt;子进程重写完成后，父进程会获得一个信号，将父进程接受到的新的写操作由子进程写入到临时文件中&lt;/p&gt;
+              &lt;/li&gt;
+              &lt;li&gt;
+                &lt;p&gt;新文件替代旧文件&lt;/p&gt;
+
+                &lt;p&gt;注：如果写入操作的时候出现故障导致命令写了一半，可以使用redis-check-aof工具修复&lt;/p&gt;
+              &lt;/li&gt;
+            &lt;/ol&gt;
+          &lt;/li&gt;
+          &lt;li&gt;
+            &lt;p&gt;AOF重写触发&lt;/p&gt;
+
+            &lt;ul&gt;
+              &lt;li&gt;
+                &lt;p&gt;手动：客户端向服务器发送BGREWRITEAOF命令&lt;/p&gt;
+              &lt;/li&gt;
+              &lt;li&gt;
+                &lt;p&gt;自动：配置文件中的选项，自动执行BGREWRITEAOF命令&lt;/p&gt;
+
+                &lt;ul&gt;
+                  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;auto-aof-rewrite-min-size &amp;lt;size&amp;gt;&lt;/code&gt;,触发AOF重写所需的最小体积：只要在AOF文件的体积大于等于size时，才会考虑是否需要进行AOF重写，这个选项用于避免对体积过小的AOF文件进行重写&lt;/li&gt;
+                  &lt;li&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;auto-aof-rewrite-percentage &amp;lt;percent&amp;gt;&lt;/code&gt;,指定触发重写所需的AOF文件体积百分比&lt;/li&gt;
+                &lt;/ul&gt;
+              &lt;/li&gt;
+              &lt;li&gt;
+                &lt;p&gt;重写配置举例&lt;/p&gt;
+              &lt;/li&gt;
+              &lt;li&gt;
+                &lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;auto-aof-rewrite-percentage 100
+auto-aof-rewrite-min-size 64MB
+当AOF文件大于64MB时候，可以考虑重写AOF文件
+只有当AOF文件的增量大于起始size的100%时，启动重写
+        
+appendonly yes
+默认关闭，需要手动开启
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;                &lt;/div&gt;
+              &lt;/li&gt;
+            &lt;/ul&gt;
+          &lt;/li&gt;
+          &lt;li&gt;
+            &lt;p&gt;优点&lt;/p&gt;
+
+            &lt;ul&gt;
+              &lt;li&gt;写入机制，默认fysnc每秒执行，性能好不阻塞服务，最多丢失一秒数据&lt;/li&gt;
+              &lt;li&gt;重写机制，可以优化AOF文件体积
+                &lt;ul&gt;
+                  &lt;li&gt;如果误操作了(flushall),只要AOF未被重写，停止服务移除AOF尾部flushall命令，重启Redis，可以将数据集恢复到flushall执行之前的状态&lt;/li&gt;
+                &lt;/ul&gt;
+              &lt;/li&gt;
+            &lt;/ul&gt;
+          &lt;/li&gt;
+          &lt;li&gt;
+            &lt;p&gt;缺点&lt;/p&gt;
+
+            &lt;ul&gt;
+              &lt;li&gt;相同数据集，AOF文件体积较RDB大了很多
+                &lt;ul&gt;
+                  &lt;li&gt;恢复数据库速度较RDB慢(文本，命令重演)&lt;/li&gt;
+                &lt;/ul&gt;
+              &lt;/li&gt;
+            &lt;/ul&gt;
+          &lt;/li&gt;
+        &lt;/ul&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+</description>
+        <pubDate>Thu, 16 May 2019 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2019/05/Redis%E6%8C%81%E4%B9%85%E5%8C%96/</link>
+        <guid isPermaLink="true">http://localhost:4000/2019/05/Redis%E6%8C%81%E4%B9%85%E5%8C%96/</guid>
+        
+        <category>Redis</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>Redis从入门到精通</title>
+        <description>&lt;h2 id=&quot;redis&quot;&gt;Redis&lt;/h2&gt;
+
+&lt;p&gt;redis是一个使用c语言编写基于BSD协议开源的一个高性能的Key-Value的NoSQL数据库&lt;/p&gt;
+
+&lt;p&gt;特点是以key: value形式存储基于内存(速度快、掉电易失)，支持持久化&lt;/p&gt;
+
+&lt;p&gt;可以理解为redis提供的就是一个大字典，相当于字典套字典&lt;/p&gt;
+
+&lt;p&gt;Redis中常用的数据结构：string、hashes 、list、sets、sorted sets、bitmaps&lt;/p&gt;
+
+&lt;p&gt;丰富的编程接口支持，主流语言基本都支持&lt;/p&gt;
+
+&lt;p&gt;用途：缓存、数据库、消息中间件(消息队列)&lt;/p&gt;
+
+&lt;h2 id=&quot;redis-安装&quot;&gt;Redis 安装&lt;/h2&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;安装依赖
+SET key value &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;EX] &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;PX] &lt;span class=&quot;o&quot;&gt;[&lt;/span&gt;NX]
+&lt;span class=&quot;c&quot;&gt;# yum -y install gcc tcl&lt;/span&gt;
+
+&lt;span class=&quot;c&quot;&gt;# tar xf redis.tar.gz&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# cd redis&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# make&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;如果出错，需要到redis目录下面编译需求文件
+&lt;span class=&quot;c&quot;&gt;# cd deps&lt;/span&gt;
+make je lu line hir
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;安装
+创建安装文件夹
+&lt;span class=&quot;nb&quot;&gt;mkdir&lt;/span&gt; &lt;span class=&quot;nt&quot;&gt;-p&lt;/span&gt; /ruanjian/redis
+&lt;span class=&quot;c&quot;&gt;# make install&lt;/span&gt;
+默认安装到/usr/local/bin
+&lt;span class=&quot;c&quot;&gt;# make PREFIX=/ruanjian/redis install&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;环境变量
+~/.bash_profile
+export REDIS_HOME=/ruanjian/redis
+export PATH=$REDIS_HOME/bin
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Redis服务&lt;/p&gt;
+
+&lt;div class=&quot;language-shell highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;查看redis-server启动命令
+&lt;span class=&quot;c&quot;&gt;# redis-server --help&lt;/span&gt;
+redis中的utils目录
+&lt;span class=&quot;c&quot;&gt;# ./install_server.sh&lt;/span&gt;
+配置文件/etc/redis/6379.conf
+修改文件名
+&lt;span class=&quot;c&quot;&gt;# mv /etc/init.d/redis_6379 /etc/init.d/redisd&lt;/span&gt;
+开机启动
+&lt;span class=&quot;c&quot;&gt;# chkconfig redisd on&lt;/span&gt;
+修改配置文件后，启动redis服务
+&lt;span class=&quot;c&quot;&gt;# service redisd start&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# service redisd start | stop | restart | status&lt;/span&gt;
+&lt;span class=&quot;c&quot;&gt;# ss -tanl&lt;/span&gt;
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;使用install_server.sh脚本生成的redis配置文件为/etc/redis/6379.conf&lt;/p&gt;
+
+&lt;p&gt;redis 3.x 版本增加了bind，不设置在本地所有网络端口监听&lt;/p&gt;
+
+&lt;p&gt;bind 192.168.1.1 127.0.0.1&lt;/p&gt;
+
+&lt;p&gt;redis 3.x 版本增加了保护模式，默认开启&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;开启保护模式时，如果不使用bind绑定ip地址，或者不使用密码，那么只能本地访问或使用unix socket文件&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;protected-mode yes&lt;/p&gt;
+
+&lt;p&gt;后台服务
+daemonize yes
+prot 6379&lt;/p&gt;
+
+&lt;h2 id=&quot;redis数据模型&quot;&gt;Redis数据模型&lt;/h2&gt;
+
+&lt;p&gt;redis支持的数据模型非常丰富&lt;/p&gt;
+
+&lt;h3 id=&quot;key&quot;&gt;Key&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Redis Key 值是二进制安全的，这以为着可以用任何二进制序列作为Key值，从形如”foo”的简单字符串到一个jpg文件的内容都可以，空字符串也是有效Key值&lt;/li&gt;
+  &lt;li&gt;Key的取值原则
+    &lt;ul&gt;
+      &lt;li&gt;键值不需要太长，消耗内存，而且查找这类键值的计算成本很高&lt;/li&gt;
+      &lt;li&gt;键值不宜过短，可读性太差&lt;/li&gt;
+      &lt;li&gt;习惯上Key采用’user:123:password’形式,表示用户id为123用户的密码&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;字符串&quot;&gt;字符串&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;字符串是一种最基本简单的Redis值类型。Redis字符串是二进制安全的，这以为着一个Redis字符串能包含任意类型的数据，例如：一张jpg格式的图片或者一个序列化的Ruby对象&lt;/li&gt;
+  &lt;li&gt;一个字符串类型的值最多能存储512M字节的内容&lt;/li&gt;
+  &lt;li&gt;本质上可以认为它是二进制的字节序列&lt;/li&gt;
+  &lt;li&gt;几乎所有数据都可以转成二进制的字节序列保存在redis中，只不过受限于第二条&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;python-中的redis编程&quot;&gt;Python 中的redis编程&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;安装redis库
+    &lt;ul&gt;
+      &lt;li&gt;pip install redis&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;redis 数值会先转化成10进制64位有符号数后，在转化成字符串，存入redis中&lt;/p&gt;
+
+&lt;h3 id=&quot;redis帮助&quot;&gt;Redis帮助&lt;/h3&gt;
+
+&lt;p&gt;help&lt;/p&gt;
+
+&lt;h3 id=&quot;字符串设置&quot;&gt;字符串设置&lt;/h3&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;SET key value [EX] [PX] [NX|XX]
+
+EX设置过期时间，秒
+
+PX设置过期时间，毫秒
+
+NX键不存在时，才能设置
+
+XX键存在是，才能设置
+
+MSET key value
+
+设置多个键的字符串值，key存在则覆盖，key不存在则增加
+
+MSETNX不存在则设置，key存在则失败。nx指不存在。
+
+原子操作
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;过期操作和生存时间&quot;&gt;过期操作和生存时间&lt;/h3&gt;
+
+&lt;p&gt;Redis中可以给每个Key设置一个生存时间(秒、毫秒),当达到这个时长后，这些键值会被自动删除&lt;/p&gt;
+
+&lt;p&gt;设置多长时间过期&lt;/p&gt;
+
+&lt;p&gt;设置到达什么时间戳过期&lt;/p&gt;
+
+&lt;p&gt;持久Key不过期&lt;/p&gt;
+
+&lt;h3 id=&quot;适用场景&quot;&gt;适用场景&lt;/h3&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;多少秒过期，例如一个缓存失效
+    &lt;ul&gt;
+      &lt;li&gt;EXPIPE key 20 — key20s后过期&lt;/li&gt;
+      &lt;li&gt;PERSIST key — key不过期&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;过期时间戳，比如从现在开始缓存数据，到0点以后失效&lt;/p&gt;
+
+    &lt;p&gt;​	TTL、PTTL 查看key的剩余时间&lt;/p&gt;
+
+    &lt;ol&gt;
+      &lt;li&gt;
+        &lt;p&gt;key存在但没有设置TTL，返回-1 — 不过期&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;key存在，但还在生存期内，返回剩余时间&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;key曾经存在，但已经消亡，返回-2 ( 2.8版本之前返回-1 )&lt;/p&gt;
+      &lt;/li&gt;
+    &lt;/ol&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h3 id=&quot;key操作&quot;&gt;Key操作&lt;/h3&gt;
+
+&lt;p&gt;keys pattern&lt;/p&gt;
+
+&lt;p&gt;pattern可以取值如下：&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;*任意长度字符&lt;/li&gt;
+  &lt;li&gt;?任意一个字符&lt;/li&gt;
+  &lt;li&gt;[ ]字符集合，表示一个字符&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;TYPE key 判断key类型&lt;/p&gt;
+
+&lt;p&gt;exists key 判断key是否存在&lt;/p&gt;
+
+&lt;p&gt;rename key newkey 给key改一个新名字、renamenx key newkey&lt;/p&gt;
+
+&lt;p&gt;del key 删除key&lt;/p&gt;
+
+&lt;h3 id=&quot;字符串获取&quot;&gt;字符串获取&lt;/h3&gt;
+
+&lt;p&gt;getset key value 取key的value，然后用本次的value覆盖旧的value&lt;/p&gt;
+
+&lt;p&gt;strlen key 求value的长度&lt;/p&gt;
+
+&lt;h3 id=&quot;字符串操作&quot;&gt;字符串操作&lt;/h3&gt;
+
+&lt;p&gt;append key value 给key对应的value追加value&lt;/p&gt;
+
+&lt;p&gt;getrange key start end 相当于Python切片，区别(前后包)!!!&lt;/p&gt;
+
+&lt;p&gt;getrange key 0 -1全拿到 相当于Python[ 0: ]&lt;/p&gt;
+
+&lt;p&gt;setrange key offset value 从offset开始把value存放进去，如果超出去就算追加，如果不存在会创建一个新的，offset之前的值补\x00&lt;/p&gt;
+
+&lt;p&gt;incr key：value值减1&lt;/p&gt;
+
+&lt;p&gt;decr key ：value值加1&lt;/p&gt;
+
+&lt;p&gt;incrby key increment：value值加increment&lt;/p&gt;
+
+&lt;p&gt;incrby key increment：value值减decrement&lt;/p&gt;
+
+&lt;h2 id=&quot;库操作&quot;&gt;库操作&lt;/h2&gt;
+
+&lt;p&gt;redis-cli -n num 可以选择库号&lt;/p&gt;
+
+&lt;p&gt;flushdb 清除当前库的数据&lt;/p&gt;
+
+&lt;p&gt;flushall 清除所有库中的数据&lt;/p&gt;
+
+&lt;h3 id=&quot;位图-bitmap&quot;&gt;位图 bitmap&lt;/h3&gt;
+
+&lt;p&gt;位图不是一个真正的数据类型，它是定义在string类型上，只不过把string按位操作&lt;/p&gt;
+
+&lt;p&gt;一个字符串类型的值最多能存储512M字节的内容，可以表示$2^{32}$,接近43亿&lt;/p&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;SETBIT key offset value 设置某一位上的值，offset偏移量，从0开始，value不写，默认是0
+
+GETBIT key bit [start] [end] 获取某一位上的值
+
+BITPOS key bit [start] [end] ------------------------------------------------------
+
+BITCOUNT key [start] [end] 统计指定区间上的值为1的个数
+
+从左往右从0开始，从右往左从-1开始，start、end官方说是按位，其实是字节
+
+BITCOUNT testkey 0 0 **表示从索引为0的字节到索引为0的字节，就是统计第一个字节**
+
+BITCOUNT testkey 0 -1 等同于 BITCOUNT testkey ，就是从头到尾统计一遍
+
+最常用的就是BITCOUNT testkey
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h2 id=&quot;位操作&quot;&gt;位操作&lt;/h2&gt;
+
+&lt;p&gt;对一个或多个保存二进制的string key进行位元操作，并将结果保存到destkey上&lt;/p&gt;
+
+&lt;p&gt;operation可以是AND、OR、NOT、XOR这四种操作中的任意一种&lt;/p&gt;
+
+&lt;p&gt;BITOP AND destkey key [key …],对一个或多个key求逻辑并，并将结果保存到destkey&lt;/p&gt;
+
+&lt;p&gt;BITOP NOT destkey key,对给定key求逻辑非，并将结果保存到desktop&lt;/p&gt;
+
+&lt;p&gt;除了NOT操作之外，其他操作都可以接受一个或多个key作为输入&lt;/p&gt;
+
+&lt;p&gt;当BITOP处理不同长度的字符串时，较短的字符串缺失部分会按0处理&lt;/p&gt;
+
+&lt;p&gt;空的key可被看作是包含0的字符串序列&lt;/p&gt;
+
+&lt;p&gt;‘a’ 位或 ‘b’结果是’c’&lt;/p&gt;
+
+&lt;h2 id=&quot;练习&quot;&gt;练习&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;网站用户的上线次数统计&lt;/p&gt;
+
+    &lt;table&gt;
+      &lt;thead&gt;
+        &lt;tr&gt;
+          &lt;th&gt;userid&lt;/th&gt;
+          &lt;th&gt;userstatus(如果索引位置为1，表示该索引位置上的用户登录过)&lt;/th&gt;
+        &lt;/tr&gt;
+      &lt;/thead&gt;
+      &lt;tbody&gt;
+        &lt;tr&gt;
+          &lt;td&gt;1&lt;/td&gt;
+          &lt;td&gt;在userkey上索引1的位置上标记1&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+          &lt;td&gt;105&lt;/td&gt;
+          &lt;td&gt;在userkey上索引105的位置上标记1&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+          &lt;td&gt; &lt;/td&gt;
+          &lt;td&gt;bitcount 可以查看有多少用户登录过，如果下线重置为0统计的就是当前在线用户&lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/tbody&gt;
+    &lt;/table&gt;
+
+    &lt;p&gt;可以统计一天内登录过的用户，也可以统计当前在线用户&lt;/p&gt;
+
+    &lt;p&gt;SETBIT user1 1 1 表示用户user1 在第一天登录过&lt;/p&gt;
+
+    &lt;p&gt;SETBIT user1 30 1 表示用户user1 在第30天登录过&lt;/p&gt;
+
+    &lt;p&gt;BITCOUNT user1 表示我要看该用户登录过的次数&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;统计网站活跃用户&lt;/p&gt;
+
+    &lt;p&gt;统计用户最近的登录情况，如果频繁，就标记为活跃用户，如果不则反之&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;按天统计活跃用户&lt;/p&gt;
+
+    &lt;p&gt;天作为key，用户ID为offset，上线置为1&lt;/p&gt;
+
+    &lt;p&gt;求一段时间内活跃用户数&lt;/p&gt;
+
+    &lt;p&gt;SETBIT 20190101 1 1 &lt;strong&gt;1号用户在2019年1月1号登录&lt;/strong&gt;&lt;/p&gt;
+
+    &lt;p&gt;SETBIT 20190714 175 1 &lt;strong&gt;175号用户&lt;/strong&gt;&lt;/p&gt;
+
+    &lt;p&gt;SETBIT 20191129 13948 1 &lt;strong&gt;13948号用户&lt;/strong&gt;&lt;/p&gt;
+
+    &lt;p&gt;求2019年登录过的用户&lt;/p&gt;
+
+    &lt;p&gt;BITOP OR 20190101-20191230&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;列表list&quot;&gt;列表List&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;其列表是基于双向列表实现，列表头尾增删快，中间增删慢&lt;/li&gt;
+  &lt;li&gt;元素是字符串类型&lt;/li&gt;
+  &lt;li&gt;元素可以重复出现&lt;/li&gt;
+  &lt;li&gt;索引支持正索引和负索引，从左至右0开始，从右至左从-1开始&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;字母&lt;/th&gt;
+      &lt;th&gt;说明&lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;B&lt;/td&gt;
+      &lt;td&gt;Block阻塞&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;L&lt;/td&gt;
+      &lt;td&gt;Left左起&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;R&lt;/td&gt;
+      &lt;td&gt;Right右起&lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;X&lt;/td&gt;
+      &lt;td&gt;Exist存在&lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;
+llen key 返回列表元素个数
+
+lpush key value [value ...] 从左边向队列中加入元素
+
+lpushx key value，要求key必须存在
+
+lpop key 从左边弹出列表中一个元素
+
+rpoplpush source destination 从源列表右边弹出添加到目标列表的左边
+
+lrange key start end 返回列表中指定访问的元素，例如lrange user 0 -1
+
+lindex key index，返回列表中指定索引的元素
+
+lset key index value 设置列表中指定索引位置的元素值，index不能超界
+
+LREM key count value 从左边删除列表中与value相等的元素
+
+count &amp;gt; 0 从左至右搜索，移除与value相等的元素，数量至多为count次
+
+count &amp;lt; 0 从右至左搜索，移除与value相等的元素，数量至多为-count次
+
+count = 0 移除列表中所有value值
+
+LTRIM key start stop 去除指定范围外的元素
+
+RPUSH listkey c abc c ab 123
+
+LTRIM listkey 0 -1 --- 什么都没有去除
+
+LTRIM listkey 1 -1 --- 去掉左边第一个
+
+LTRIM listkey 1 10000
+
+LINSERT key BEFORE | AFTER pivot value 在列表中某个存在的值(pivot) 前或者后插入元素一次，key或pivot不存在，不操作
+
+
+
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;练习-1&quot;&gt;练习&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;微博某帖子的最后50条评论(就是最新的50条评论)&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;table&gt;
+  &lt;thead&gt;
+    &lt;tr&gt;
+      &lt;th&gt;title-id&lt;/th&gt;
+      &lt;th&gt; &lt;/th&gt;
+    &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+    &lt;tr&gt;
+      &lt;td&gt;1&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;200&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;3242&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+    &lt;tr&gt;
+      &lt;td&gt;23239&lt;/td&gt;
+      &lt;td&gt; &lt;/td&gt;
+    &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+
+&lt;p&gt;LTRIM userid：titleid：comments 0 50&lt;/p&gt;
+
+&lt;h3 id=&quot;持久化方式&quot;&gt;持久化方式&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Redis有两种持久化方式
+    &lt;ul&gt;
+      &lt;li&gt;RDB&lt;/li&gt;
+      &lt;li&gt;AOF&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;hash散列&quot;&gt;hash散列&lt;/h3&gt;
+&lt;div class=&quot;highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;值是由field和value组成的map键值对
+
+field和value都是字符串类型
+
+HSET key field value 设置单个字段。field不存在创建，存在覆盖value
+
+HSETNX key field value 设置单个字段，要求field不存在。如果key不存在，相当于field也不存在
+
+HMSET key field value [field value] 设置多个字段
+
+HLEN key 返回字段个数
+
+HEXISTS key field 判断字段是否存在。key或者field不存在，返回0
+
+HGET key field 返回字段值
+
+HMGET key field [field ...] 返回多个字段值
+
+HGETALL key 返回所有的键值对
+
+HKEYS key 返回所有字段名
+
+HVALS key 返回所有值
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;h4 id=&quot;hash用途&quot;&gt;hash用途&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;节约内存空间&lt;/li&gt;
+  &lt;li&gt;每创建一个键，它都会为这个键存储一些附加的管理信息(比如这个键的类型，这个键最后一次被访问的时间等)&lt;/li&gt;
+  &lt;li&gt;hash适合封装对象&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;不适合hash的情况&quot;&gt;不适合hash的情况&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;使用二进制位操作命令：因为Redis目前支持对字符串键进行SETBIT、GETBIT、BITOP等操作，如果你想使用这些操作，那么只能使用字符串键，虽然散列也能保存二进制数据&lt;/li&gt;
+  &lt;li&gt;使用过期键功能：Redis的键过期功能目前只能对键进行过期操作，而不能对散列的字段进行过期操作，因此如果你要对键值对数据使用过期功能的话，那么只能把键值对存储在字符串里面&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;hash练习&quot;&gt;hash练习&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;用户维度统计&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;
+        &lt;p&gt;统计包括 被关注的人数、粉丝数、喜欢的商品数、发帖数&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;用户为key，不同维度为Field，value为统计数
+HSET user: 13324 follow 5  —  用户13324的被关注数为5&lt;/p&gt;
+
+        &lt;p&gt;HINCRBY: user: 13324 follow 1 — 又有一个粉丝关注了13325&lt;/p&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;商品维度统计
+    &lt;ul&gt;
+      &lt;li&gt;统计包括 喜欢数、评论数、购买数、浏览数等&lt;/li&gt;
+      &lt;li&gt;HSET item: 5342 fav 500  — 有五百人收藏了商品5342&lt;/li&gt;
+      &lt;li&gt;HINCRBY: item: 5342 fav 1 — 又有一个用户收藏了商品5342&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;缓存用户信息
+    &lt;ul&gt;
+      &lt;li&gt;登录后，反复需要读取用户的常用信息，最好的方式就是缓存起来&lt;/li&gt;
+      &lt;li&gt;HMSET user:001 name “Nicky” age 18 birthday “20190101”&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;集合set&quot;&gt;集合Set&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;集合的元素是无序的、去重的，元素是字符串类型&lt;/li&gt;
+  &lt;li&gt;SADD key member [member …] 增加一个或多个元素，元素已存在将忽略&lt;/li&gt;
+  &lt;li&gt;SREM key member [member …] 移除一个或多个元素，元素不存在自动忽略&lt;/li&gt;
+  &lt;li&gt;SCARD key 返回集合中元素的个数，不需要遍历&lt;/li&gt;
+  &lt;li&gt;SMEMBER — 数据体量大的情况下禁止使用&lt;/li&gt;
+  &lt;li&gt;SRANDMEMBER key [num] 随机取num个数据，num为负可以取到重复数据&lt;/li&gt;
+  &lt;li&gt;SISMEMBER key member 元素是否是在集合中&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;元素相同的两个集合，未必有相同的顺序。想要去重且有序可使用有序集合&lt;/strong&gt;&lt;/li&gt;
+  &lt;li&gt;SPOP key 从集合中随机移除一个元素并返回该元素&lt;/li&gt;
+  &lt;li&gt;SMOVE source destination member 把元素从源集合移动到目标集合&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;结合运算&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;差集
+    &lt;ul&gt;
+      &lt;li&gt;SDIFF key [key …] 从第一个key的集合中去除其他集合和自己交集部分&lt;/li&gt;
+      &lt;li&gt;SDIFFSTORE destination key [key …] 将差集结果存储在目标key中&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;交集
+    &lt;ul&gt;
+      &lt;li&gt;SINTER key [key …] 取所有集合交集部分&lt;/li&gt;
+      &lt;li&gt;SINTERSTORE destination key [key …] 将交集结果存储在目标key中&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;并集&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;SUNION key [key …] 取所有集合的并集&lt;/li&gt;
+      &lt;li&gt;SINTERSTORE destination key [key …] 讲并集结果存储在目标key中&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;练习&lt;/p&gt;
+
+    &lt;ul&gt;
+      &lt;li&gt;
+        &lt;p&gt;微博的共同关注&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;需求分析：当用户访问另一个用户的时候，会显示出两个用户共同关注的好友&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;项目设计：将每个用户关注的用户放在集合中，求交集即可&lt;/p&gt;
+      &lt;/li&gt;
+      &lt;li&gt;
+        &lt;p&gt;代码实现：&lt;/p&gt;
+
+        &lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;peter&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'nicky'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'tom'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'jerry'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;ben&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'nicky'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'may'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'alex'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;SINTER&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;peter&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ben&lt;/span&gt; &lt;span class=&quot;err&quot;&gt;结果为&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'nicky'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;        &lt;/div&gt;
+      &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;有序集合sortedset&quot;&gt;有序集合SortedSet&lt;/h3&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;
+    &lt;p&gt;类似Set集合，有序的集合&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;每一个元素都关联着一个浮点数分值(Score),并按照分值从小到大的顺序排列集合中的元素。分值可以相同&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;一个保存了水果价格的有序集合&lt;/p&gt;
+
+    &lt;table&gt;
+      &lt;thead&gt;
+        &lt;tr&gt;
+          &lt;th&gt;分值&lt;/th&gt;
+          &lt;th&gt;2.0&lt;/th&gt;
+          &lt;th&gt;3.2&lt;/th&gt;
+          &lt;th&gt;4.0&lt;/th&gt;
+          &lt;th&gt;6.8&lt;/th&gt;
+          &lt;th&gt;7.0&lt;/th&gt;
+          &lt;th&gt;9.2&lt;/th&gt;
+          &lt;th&gt;12.0&lt;/th&gt;
+        &lt;/tr&gt;
+      &lt;/thead&gt;
+      &lt;tbody&gt;
+        &lt;tr&gt;
+          &lt;td&gt;元素&lt;/td&gt;
+          &lt;td&gt;西瓜&lt;/td&gt;
+          &lt;td&gt;香蕉&lt;/td&gt;
+          &lt;td&gt;番石榴&lt;/td&gt;
+          &lt;td&gt;芒果&lt;/td&gt;
+          &lt;td&gt;梨&lt;/td&gt;
+          &lt;td&gt;葡萄&lt;/td&gt;
+          &lt;td&gt;苹果&lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/tbody&gt;
+    &lt;/table&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;一个保存了员工薪水的有序集合&lt;/p&gt;
+
+    &lt;table&gt;
+      &lt;thead&gt;
+        &lt;tr&gt;
+          &lt;th&gt;分值&lt;/th&gt;
+          &lt;th&gt;3500.0&lt;/th&gt;
+          &lt;th&gt;4000.0&lt;/th&gt;
+          &lt;th&gt;4500.00&lt;/th&gt;
+          &lt;th&gt;5000.0&lt;/th&gt;
+          &lt;th&gt;25000.0&lt;/th&gt;
+        &lt;/tr&gt;
+      &lt;/thead&gt;
+      &lt;tbody&gt;
+        &lt;tr&gt;
+          &lt;td&gt;元素&lt;/td&gt;
+          &lt;td&gt;jack&lt;/td&gt;
+          &lt;td&gt;john&lt;/td&gt;
+          &lt;td&gt;peter&lt;/td&gt;
+          &lt;td&gt;tom&lt;/td&gt;
+          &lt;td&gt;david&lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/tbody&gt;
+    &lt;/table&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;一个有序集合，保存了正在阅读某些技术书的人数&lt;/p&gt;
+
+    &lt;table&gt;
+      &lt;thead&gt;
+        &lt;tr&gt;
+          &lt;th&gt;分值&lt;/th&gt;
+          &lt;th&gt;251&lt;/th&gt;
+          &lt;th&gt;347&lt;/th&gt;
+          &lt;th&gt;928&lt;/th&gt;
+          &lt;th&gt;1030&lt;/th&gt;
+          &lt;th&gt;3436&lt;/th&gt;
+        &lt;/tr&gt;
+      &lt;/thead&gt;
+      &lt;tbody&gt;
+        &lt;tr&gt;
+          &lt;td&gt;元素&lt;/td&gt;
+          &lt;td&gt;编程人生&lt;/td&gt;
+          &lt;td&gt;人月神话&lt;/td&gt;
+          &lt;td&gt;设计模式&lt;/td&gt;
+          &lt;td&gt;深入计算机系统&lt;/td&gt;
+          &lt;td&gt;算法导论&lt;/td&gt;
+        &lt;/tr&gt;
+      &lt;/tbody&gt;
+    &lt;/table&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h4 id=&quot;练习-2&quot;&gt;练习&lt;/h4&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;音乐排行榜
+    &lt;ul&gt;
+      &lt;li&gt;需求分析：歌名会冲突，所以用id作为元素，每首歌的播放次数作为分值&lt;/li&gt;
+      &lt;li&gt;ZREVRANGE来获取播放次数最多的歌曲&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;新浪微博翻页
+    &lt;ul&gt;
+      &lt;li&gt;时间戳作为分值&lt;/li&gt;
+      &lt;li&gt;ZREVRANGE blog 10 20&lt;/li&gt;
+      &lt;li&gt;显示所有博客中的最后的指定条目&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+  &lt;li&gt;京东图书畅销榜
+    &lt;ul&gt;
+      &lt;li&gt;统计单日榜，计算出周榜，月榜，年榜&lt;/li&gt;
+      &lt;li&gt;统计到目前为止，图书的销售量&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Sun, 28 Apr 2019 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2019/04/Redis/</link>
+        <guid isPermaLink="true">http://localhost:4000/2019/04/Redis/</guid>
+        
+        <category>Redis</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>Python爬虫开发</title>
+        <description>&lt;p&gt;爬虫的基本流程&lt;/p&gt;
+
+&lt;p&gt;数据采集&lt;/p&gt;
+
+&lt;p&gt;数据清洗&lt;/p&gt;
+
+&lt;p&gt;数据持久化&lt;/p&gt;
+
+&lt;h3 id=&quot;urllib&quot;&gt;urllib&lt;/h3&gt;
+
+&lt;p&gt;urlopen Request&lt;/p&gt;
+
+&lt;p&gt;urllib.parse模块&lt;/p&gt;
+
+&lt;p&gt;该模块可以完成对url的编解码&lt;/p&gt;
+
+&lt;h3 id=&quot;urlopen&quot;&gt;urlopen&lt;/h3&gt;
+
+&lt;p&gt;可以发起一个http请求，返回一个response对象&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;c1&quot;&gt;# urlopen的用法
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;urllib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;urlopen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;timeout&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,]&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cafile&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;capath&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cadefault&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;False&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;context&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;None&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;两行代码爬百度首页&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;urllib.request&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urllib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;urlopen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'http://www.baidu.com'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;read&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;decode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'utf-8'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;我的第一个POST请求&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;urllib.parse&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;urllib.request&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;# 如果有request中有data数据那么就是POST请求，如果没有的话就是GET请求
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;bytes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;urllib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;parse&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;urlencode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'word'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'hello'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;encoding&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'utf8'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urllib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;urlopen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'http://httpbin.org/post'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;read&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;测试超时时间&lt;/p&gt;
+
+&lt;p&gt;不超时&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;urllib.request&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# timeout表示设置超时间，表示如果指定时间后没有接收到response，那么抛异常timed out
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urllib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;urlopen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'http://httpbin.org/get'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;timeout&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;10&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;read&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;超时&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;socket&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;urllib.request&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;urllib.error&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# 超时时间为0.1秒,所以很容易就超时了
+&lt;/span&gt;&lt;span class=&quot;k&quot;&gt;try&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;response&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urllib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;urlopen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'http://httpbin.org/get'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;timeout&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mf&quot;&gt;0.1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;except&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urllib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;error&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;URLError&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;if&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;isinstance&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;e&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;reason&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;socket&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;timeout&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+        &lt;span class=&quot;k&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'TIME OUT'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;响应&quot;&gt;响应&lt;/h3&gt;
+
+&lt;p&gt;响应类型&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;urllib.request&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urllib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;urlopen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'https://www.python.org'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;type&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;状态码、响应头、服务器&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;urllib.request&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urllib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;urlopen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'http://www.python.org'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;status&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;getheaders&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;getheader&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'Server'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;响应体&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;urllib.request&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# 拿到以后是字节，需要转换成unicode字符
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urllib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;urlopen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'https://www.python.org'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;read&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;decode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'utf-8'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h3 id=&quot;request&quot;&gt;Request&lt;/h3&gt;
+
+&lt;p&gt;可以构造http请求头&lt;/p&gt;
+
+&lt;p&gt;我们需要传一个请求头过去的时候，urlopen并没有提供参数传递，所以我们就需要借助urllib发送一个request对象&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;urllib.request&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# 我们先实例化一个request对象
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;request&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urllib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Request&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'https://python.org'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# 然后把request对象当做参数传递给urlopen
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urllib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;urlopen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;read&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;decode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'utf-8'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;我们自己构建request对象&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;urllib&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;parse&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;# 需要的user-agent
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ua&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_3) AppleWebKit/535.20 (KHTML, like Gecko) Chrome/19.0.1036.7 Safari/535.20'&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# 请求的url
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'http://httpbin.org/post'&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# 构造一个请求头
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;headers&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;s&quot;&gt;'User-agent'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ua&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+    &lt;span class=&quot;s&quot;&gt;'Host'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'httpbin.org'&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# 请求参数是字典形式
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dict1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;s&quot;&gt;'name'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'Germey'&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# 将请求参数编码成url方式
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;bytes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;parse&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;urlencode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dict1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;encoding&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'utf8'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# 构建请求对象
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;req&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Request&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;headers&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;headers&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;method&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'POST'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# 把对象传递给urlopen
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;urlopen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;req&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;read&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;decode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'utf-8'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;构建请求头头的方式除了上面这种以外，还提供了request.add_headers方法&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;from&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;urllib&lt;/span&gt; &lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;parse&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;url&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'http://httpbin.org/post'&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;dict1&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;s&quot;&gt;'name'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'Germey'&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;nb&quot;&gt;bytes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;parse&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;urlencode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;dict1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;encoding&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'utf8'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;req&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Request&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;url&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;method&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'POST'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;c1&quot;&gt;# add_header方法接受
+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;req&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;add_header&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'User-agent'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_7_3) AppleWebKit/535.20 (KHTML, like Gecko) Chrome/19.0.1036.7 Safari/535.20'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;urlopen&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;req&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;read&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;decode&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'utf-8'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;当我们需要设置代理、Cookie的时候发现Request对象也帮助不了我们，这时候就需要用到Handler&lt;/p&gt;
+
+&lt;h3 id=&quot;handler&quot;&gt;Handler&lt;/h3&gt;
+
+&lt;p&gt;获取cookie&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;http.cookiejar&lt;/span&gt; 
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;urllib.request&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;cookie&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;http&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cookiejar&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;CookieJar&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urllib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;HTTPCookieProcessor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cookie&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;opener&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urllib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;build_opener&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;opener&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;open&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'http://www.baidu.com'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;for&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;item&lt;/span&gt; &lt;span class=&quot;ow&quot;&gt;in&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cookie&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+    &lt;span class=&quot;k&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;name&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;=&quot;&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;item&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;value&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+    
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;把cookie保存到本地&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;http.cookiejar&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;urllib.request&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;filename&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;cookie.txt&quot;&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;cookie&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;http&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cookiejar&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;MozillaCookieJar&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;filename&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urllib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;HTTPCookieProcessor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cookie&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;openner&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urllib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;build_opener&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;openner&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;open&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'http://www.baidu.com'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;cookie&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;save&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ignore_discard&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ignore_expires&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;另一种保存cookie格式&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;http.cookiejar&lt;/span&gt;
+&lt;span class=&quot;kn&quot;&gt;import&lt;/span&gt; &lt;span class=&quot;nn&quot;&gt;urllib.request&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;filename&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;&quot;cookie1.txt&quot;&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;cookie&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;http&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cookiejar&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;LWPCookieJar&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;filename&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urllib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;HTTPCookieProcessor&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cookie&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;openner&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;urllib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;request&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;build_opener&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;handler&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;response&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;openner&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;open&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'http://www.baidu.com'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;cookie&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;save&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ignore_discard&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ignore_expires&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;加载保存好的cookie&lt;/p&gt;
+
+&lt;h2 id=&quot;beautifulsoup&quot;&gt;BeautifulSoup&lt;/h2&gt;
+
+&lt;p&gt;用来做HTML解析&lt;/p&gt;
+
+&lt;p&gt;BeautifulSoup(markup=””, features=None)&lt;/p&gt;
+
+&lt;p&gt;第一个参数内容，第二个解析器是谁&lt;/p&gt;
+
+&lt;p&gt;markup可以是文件对象或者html字符串&lt;/p&gt;
+
+&lt;p&gt;features指定解析器，返回一个文档对象，如果不指定默认使用Python标准库的解析器，我们推荐使用lxml，还有一种html5lib&lt;/p&gt;
+
+&lt;p&gt;BeautifulSoup对象代表整个文档&lt;/p&gt;
+
+&lt;h3 id=&quot;tag对象&quot;&gt;Tag对象&lt;/h3&gt;
+
+&lt;p&gt;深度优先，找第一个&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;它对应着HTML中的标签，&lt;/li&gt;
+  &lt;li&gt;它有两个常用属性：
+    &lt;ul&gt;
+      &lt;li&gt;name：Tag对象的名称，就是标签名称&lt;/li&gt;
+      &lt;li&gt;attrs：标签的属性字典&lt;/li&gt;
+      &lt;li&gt;多值属性，对于class属性可能有多个样式&lt;/li&gt;
+      &lt;li&gt;属性可以被修改删除&lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h3 id=&quot;navigablestring&quot;&gt;NavigableString&lt;/h3&gt;
+
+&lt;p&gt;如果只想输出标记内的文本，而不关心标记的话，就要是用NavigableString。&lt;/p&gt;
+
+&lt;h3 id=&quot;注释对象&quot;&gt;注释对象&lt;/h3&gt;
+
+&lt;h3 id=&quot;loop文档树&quot;&gt;loop文档树&lt;/h3&gt;
+
+&lt;h3 id=&quot;scrapy&quot;&gt;Scrapy&lt;/h3&gt;
+
+&lt;p&gt;Scrapy是一个为了爬取网站数据，提取结构性数据而编写的应用框架。 其可以应用在数据挖掘，信息处理或存储历史数据等一系列的程序中。
+其最初是为了页面抓取 (更确切来说, 网络抓取 )所设计的， 也可以应用在获取API所返回的数据(例如 Amazon Associates Web Services ) 或者通用的网络爬虫。Scrapy用途广泛，可以用于数据挖掘、监测和自动化测试。&lt;/p&gt;
+
+&lt;p&gt;Scrapy 使用了 Twisted异步网络库来处理网络通讯。整体架构大致如下&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;https://images2015.cnblogs.com/blog/425762/201605/425762-20160507220247421-1722096301.png&quot; alt=&quot;avatar&quot; /&gt;&lt;/p&gt;
+
+&lt;p&gt;Scrapy主要包括了以下组件：&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;引擎(Scrapy)&lt;/strong&gt;
+&lt;em&gt;用来处理整个系统的数据流处理, 触发事务(框架核心)&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;调度器(Scheduler)&lt;/strong&gt;
+&lt;em&gt;用来接受引擎发过来的请求, 压入队列中, 并在引擎再次请求的时候返回. 可以想像成一个URL（抓取网页的网址或者说是链接）的优先队列, 由它来决定下一个要抓取的网址是什么, 同时去除重复的网址&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;下载器(Downloader)&lt;/strong&gt;
+&lt;em&gt;用于下载网页内容, 并将网页内容返回给蜘蛛(Scrapy下载器是建立在twisted这个高效的异步模型上的)&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;爬虫(Spiders)&lt;/strong&gt;
+&lt;em&gt;爬虫是主要干活的, 用于从特定的网页中提取自己需要的信息, 即所谓的实体(Item)。用户也可以从中提取出链接,让Scrapy继续抓取下一个页面&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;项目管道(Pipeline)&lt;/strong&gt;
+&lt;em&gt;负责处理爬虫从网页中抽取的实体，主要的功能是持久化实体、验证实体的有效性、清除不需要的信息。当页面被爬虫解析后，将被发送到项目管道，并经过几个特定的次序处理数据。&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;下载器中间件(Downloader Middlewares)&lt;/strong&gt;
+&lt;em&gt;位于Scrapy引擎和下载器之间的框架，主要是处理Scrapy引擎与下载器之间的请求及响应。&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;爬虫中间件(Spider Middlewares)&lt;/strong&gt;
+&lt;em&gt;介于Scrapy引擎和爬虫之间的框架，主要工作是处理蜘蛛的响应输入和请求输出。&lt;/em&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;调度中间件(Scheduler Middewares)&lt;/strong&gt;
+&lt;em&gt;介于Scrapy引擎和调度之间的中间件，从Scrapy引擎发送到调度的请求和响应。&lt;/em&gt;&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Mon, 25 Feb 2019 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2019/02/Python%E7%88%AC%E8%99%AB/</link>
+        <guid isPermaLink="true">http://localhost:4000/2019/02/Python%E7%88%AC%E8%99%AB/</guid>
+        
+        <category>Python爬虫</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>Python并发编程</title>
+        <description>&lt;h2 id=&quot;同步&quot;&gt;同步&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;栗子：我的目的是要看书，同步就是我让你把书递给我，我双手接下&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;异步&quot;&gt;异步&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;栗子：目的还是看书，异步就是我让你把书放到我的书桌上&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;阻塞&quot;&gt;阻塞&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;阻塞就是停下来，比如大脑要是阻塞了，就会变成植物人，他就动不了了&lt;/li&gt;
+  &lt;li&gt;栗子：我烧水，把水放到热水器里，然后我就直勾勾的盯着热水器看，怎么还不开，怎么还不开……….一千年以后，水终于烧开了- 。-、&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;非阻塞&quot;&gt;非阻塞&lt;/h2&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;非阻塞就是，很通畅，想干嘛就干嘛&lt;/li&gt;
+  &lt;li&gt;栗子：我又烧水了，这次我把水放到热水器里，然后就去王者荣耀了，靠着一场逆风五杀赢下了比赛，好巧，我的水烧开了，开心！&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+        <pubDate>Fri, 04 Jan 2019 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2019/01/Python%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/</link>
+        <guid isPermaLink="true">http://localhost:4000/2019/01/Python%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B/</guid>
+        
+        <category>Python并发编程</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>JavaScript模块化</title>
+        <description>&lt;h2 id=&quot;模块化的背景&quot;&gt;模块化的背景&lt;/h2&gt;
+
+&lt;h2 id=&quot;浏览器支持&quot;&gt;浏览器支持&lt;/h2&gt;
+
+&lt;h2 id=&quot;导出模块的功能&quot;&gt;导出模块的功能&lt;/h2&gt;
+
+&lt;h2 id=&quot;导入功能到你的脚本&quot;&gt;导入功能到你的脚本&lt;/h2&gt;
+
+&lt;h2 id=&quot;应用模块到你的html&quot;&gt;应用模块到你的HTML&lt;/h2&gt;
+
+&lt;h2 id=&quot;其他模块与标准模块的不同&quot;&gt;其他模块与标准模块的不同&lt;/h2&gt;
+
+&lt;h2 id=&quot;默认导出versus命名导出&quot;&gt;默认导出versus命名导出&lt;/h2&gt;
+
+&lt;h2 id=&quot;避免命名冲突&quot;&gt;避免命名冲突&lt;/h2&gt;
+
+&lt;h2 id=&quot;别名导入和导出&quot;&gt;别名导入和导出&lt;/h2&gt;
+
+&lt;h2 id=&quot;创建模块对象&quot;&gt;创建模块对象&lt;/h2&gt;
+
+&lt;h2 id=&quot;模块和类&quot;&gt;模块和类&lt;/h2&gt;
+
+&lt;h2 id=&quot;聚合模块&quot;&gt;聚合模块&lt;/h2&gt;
+
+&lt;h2 id=&quot;模块动态加载&quot;&gt;模块动态加载&lt;/h2&gt;
+
+</description>
+        <pubDate>Thu, 27 Dec 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2018/12/JavaScript-16-%E6%A8%A1%E5%9D%97%E5%8C%96/</link>
+        <guid isPermaLink="true">http://localhost:4000/2018/12/JavaScript-16-%E6%A8%A1%E5%9D%97%E5%8C%96/</guid>
+        
+        <category>JavaScript</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>JavaScript元编程</title>
+        <description>&lt;p&gt;从&lt;code class=&quot;highlighter-rouge&quot;&gt;ES6&lt;/code&gt;开始JavaScript获得了&lt;code class=&quot;highlighter-rouge&quot;&gt;Proxy&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;Reflect&lt;/code&gt;对象的支持，允许你拦截并定义基本语言操作的自定义行为（例如：属性查找，赋值，枚举，函数调用等）。借助这两个对象，你可以在JavaScript元级别进行编程&lt;/p&gt;
+
+&lt;h2 id=&quot;代理&quot;&gt;代理&lt;/h2&gt;
+
+&lt;h2 id=&quot;术语&quot;&gt;术语&lt;/h2&gt;
+
+&lt;h2 id=&quot;句柄和陷阱&quot;&gt;句柄和陷阱&lt;/h2&gt;
+
+&lt;h2 id=&quot;撤销proxy&quot;&gt;撤销&lt;code class=&quot;highlighter-rouge&quot;&gt;Proxy&lt;/code&gt;&lt;/h2&gt;
+
+&lt;h2 id=&quot;反射&quot;&gt;反射&lt;/h2&gt;
+
+&lt;h3 id=&quot;更好的apply函数&quot;&gt;更好的&lt;code class=&quot;highlighter-rouge&quot;&gt;apply&lt;/code&gt;函数&lt;/h3&gt;
+
+&lt;h3 id=&quot;检查属性定义是否成功&quot;&gt;检查属性定义是否成功&lt;/h3&gt;
+
+</description>
+        <pubDate>Tue, 25 Dec 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2018/12/JavaScript-15-%E5%85%83%E7%BC%96%E7%A8%8B/</link>
+        <guid isPermaLink="true">http://localhost:4000/2018/12/JavaScript-15-%E5%85%83%E7%BC%96%E7%A8%8B/</guid>
+        
+        <category>JavaScript</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>JavaScript迭代器和生成器</title>
+        <description>&lt;p&gt;处理集合中的每个项是很常见的操作。JavaScript提供了许多迭代集合的方法，从简单的&lt;code class=&quot;highlighter-rouge&quot;&gt;for&lt;/code&gt;循环到&lt;code class=&quot;highlighter-rouge&quot;&gt;map()&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;filter()&lt;/code&gt;。迭代器和生成器将迭代的概念直接带入核心语言，并提供了一种机制来自定义&lt;code class=&quot;highlighter-rouge&quot;&gt;for...of&lt;/code&gt;循环行为&lt;/p&gt;
+
+&lt;h2 id=&quot;迭代器&quot;&gt;迭代器&lt;/h2&gt;
+
+&lt;h2 id=&quot;生成器&quot;&gt;生成器&lt;/h2&gt;
+
+&lt;h2 id=&quot;可迭代对象&quot;&gt;可迭代对象&lt;/h2&gt;
+
+&lt;h3 id=&quot;自定义的可迭代对象&quot;&gt;自定义的可迭代对象&lt;/h3&gt;
+
+&lt;h3 id=&quot;内置可迭代对象&quot;&gt;内置可迭代对象&lt;/h3&gt;
+
+&lt;h3 id=&quot;用于可迭代对象的语法&quot;&gt;用于可迭代对象的语法&lt;/h3&gt;
+
+&lt;h2 id=&quot;高级生成器&quot;&gt;高级生成器&lt;/h2&gt;
+
+</description>
+        <pubDate>Sun, 23 Dec 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2018/12/JavaScript-14%E8%BF%AD%E4%BB%A3%E5%99%A8%E5%92%8C%E7%94%9F%E6%88%90%E5%99%A8/</link>
+        <guid isPermaLink="true">http://localhost:4000/2018/12/JavaScript-14%E8%BF%AD%E4%BB%A3%E5%99%A8%E5%92%8C%E7%94%9F%E6%88%90%E5%99%A8/</guid>
+        
+        <category>JavaScript</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>JavaScript 使用Promise</title>
+        <description>&lt;p&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;Promise&lt;/code&gt;是一个对象，它代表了一个异步操作的最终完成或者失败&lt;/p&gt;
+
+&lt;p&gt;本质上，Promise是一个被某些函数传出的对象，我们附加回调函数（callback）使用它，而不是将回调函数传入那些函数内部&lt;/p&gt;
+
+&lt;h2 id=&quot;约定&quot;&gt;约定&lt;/h2&gt;
+
+&lt;h2 id=&quot;链式调用&quot;&gt;链式调用&lt;/h2&gt;
+
+&lt;h3 id=&quot;catch的后续链式操作&quot;&gt;Catch的后续链式操作&lt;/h3&gt;
+
+&lt;h2 id=&quot;错误传递&quot;&gt;错误传递&lt;/h2&gt;
+
+&lt;h2 id=&quot;promise拒绝事件&quot;&gt;Promise拒绝事件&lt;/h2&gt;
+
+&lt;h2 id=&quot;在旧式回调api中创建promise&quot;&gt;在旧式回调API中创建Promise&lt;/h2&gt;
+
+&lt;h2 id=&quot;组合&quot;&gt;组合&lt;/h2&gt;
+
+&lt;h2 id=&quot;时序&quot;&gt;时序&lt;/h2&gt;
+
+&lt;h2 id=&quot;嵌套&quot;&gt;嵌套&lt;/h2&gt;
+
+&lt;h2 id=&quot;常见错误&quot;&gt;常见错误&lt;/h2&gt;
+
+</description>
+        <pubDate>Fri, 21 Dec 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2018/12/JavaScript-14-Promise/</link>
+        <guid isPermaLink="true">http://localhost:4000/2018/12/JavaScript-14-Promise/</guid>
+        
+        <category>JavaScript</category>
+        
+        
+      </item>
+    
+      <item>
+        <title>JavaScript继承和原型链</title>
+        <description>&lt;p&gt;对于使用过基于类实现面向对象语言的开发人员来说，JavaScript有点令人困惑，因为它是动态的，并且本身不提供一个&lt;code class=&quot;highlighter-rouge&quot;&gt;class&lt;/code&gt;实现（在ES6中引入了class关键字，但那只是语法糖，JavaScript仍然是基于原型的）&lt;/p&gt;
+
+&lt;p&gt;当谈到继承时，JavaScript只有一种结构：对象。每个实例对象都有一个私有属性&lt;code class=&quot;highlighter-rouge&quot;&gt;__proto__&lt;/code&gt;指向它的构造函数的原型对象（Prototype）。该原型对象也有一个自己的原型对象（&lt;code class=&quot;highlighter-rouge&quot;&gt;__proto__&lt;/code&gt;），层次向上直到一个对象的原型对象为&lt;code class=&quot;highlighter-rouge&quot;&gt;null&lt;/code&gt;。根据定义，&lt;code class=&quot;highlighter-rouge&quot;&gt;null&lt;/code&gt;没有原型，并作为这个&lt;strong&gt;原型链&lt;/strong&gt;中的最后一个环节&lt;/p&gt;
+
+&lt;p&gt;几乎所有JavaScript中的对象都是位于原型链顶端的&lt;code class=&quot;highlighter-rouge&quot;&gt;Object&lt;/code&gt;的实例&lt;/p&gt;
+
+&lt;p&gt;尽管这种原型继承通常被认为是JavaScript的弱点之一，但是原型继承本身实际上比经典模型更强大。例如，在原型模型的基础上构架经典模型相当简单&lt;/p&gt;
+
+&lt;h2 id=&quot;基于原型链的继承&quot;&gt;基于原型链的继承&lt;/h2&gt;
+
+&lt;h3 id=&quot;继承属性&quot;&gt;继承属性&lt;/h3&gt;
+
+&lt;h3 id=&quot;继承方法&quot;&gt;继承方法&lt;/h3&gt;
+
+&lt;h2 id=&quot;在javascript中使用原型&quot;&gt;在JavaScript中使用原型&lt;/h2&gt;
+
+&lt;h2 id=&quot;使用不同的方法来创建对象和生成原型链&quot;&gt;使用不同的方法来创建对象和生成原型链&lt;/h2&gt;
+
+&lt;h3 id=&quot;使用语法结构创建的对象&quot;&gt;使用语法结构创建的对象&lt;/h3&gt;
+
+&lt;h3 id=&quot;使用构造器创建的对象&quot;&gt;使用构造器创建的对象&lt;/h3&gt;
+
+&lt;h3 id=&quot;使用objectcreate创建的对象&quot;&gt;使用&lt;code class=&quot;highlighter-rouge&quot;&gt;Object.create&lt;/code&gt;创建的对象&lt;/h3&gt;
+
+&lt;h3 id=&quot;使用class关键字创建的对象&quot;&gt;使用&lt;code class=&quot;highlighter-rouge&quot;&gt;class&lt;/code&gt;关键字创建的对象&lt;/h3&gt;
+
+&lt;h3 id=&quot;性能&quot;&gt;性能&lt;/h3&gt;
+
+&lt;h3 id=&quot;错误实践扩展原生对象的原型&quot;&gt;错误实践：扩展原生对象的原型&lt;/h3&gt;
+
+&lt;h3 id=&quot;总结4个用于扩展原型链的方法&quot;&gt;总结：4个用于扩展原型链的方法&lt;/h3&gt;
+
+&lt;h3 id=&quot;prototype和objectgetprototypeof&quot;&gt;&lt;code class=&quot;highlighter-rouge&quot;&gt;Prototype&lt;/code&gt;和&lt;code class=&quot;highlighter-rouge&quot;&gt;Object.getPrototypeOf&lt;/code&gt;&lt;/h3&gt;
+
+&lt;h3 id=&quot;结论&quot;&gt;结论&lt;/h3&gt;
+
+</description>
+        <pubDate>Wed, 19 Dec 2018 00:00:00 +0800</pubDate>
+        <link>http://localhost:4000/2018/12/JavaScript-13-%E7%BB%A7%E6%89%BF%E5%92%8C%E5%8E%9F%E5%9E%8B%E9%93%BE/</link>
+        <guid isPermaLink="true">http://localhost:4000/2018/12/JavaScript-13-%E7%BB%A7%E6%89%BF%E5%92%8C%E5%8E%9F%E5%9E%8B%E9%93%BE/</guid>
+        
+        <category>JavaScript</category>
+        
+        
+      </item>
+    
+  </channel>
+</rss>

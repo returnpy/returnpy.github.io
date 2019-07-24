@@ -32,13 +32,13 @@ title:
 
 熟练掌握Python后端RESTful风格API开发，熟练使用Django、Flask等Web框架，
 
-熟练前端开发知识H5、ES6、CSS3、AJAX、JSONP，对Vue， React等前端框架有比较多的应用
+熟练掌握前端基础知识，熟悉前端框架Vuejs，React
 
 熟悉其他Web框架如Tronado、bottle等
 
 熟悉网络编程、异步编程、 IO多路复用 select、poll、epoll
 
-熟悉常用设计模式
+熟悉面向对象的常用设计模式
 
 
 熟悉常用算法和数据结构，如Quicksort、Heapsort、Mergesort等
@@ -49,7 +49,7 @@ title:
 
 熟悉常用消息中间件RabbitMQ等
 
-懂得一般的网络安全防护XSS、CSRF、**SQL** injection等
+熟悉基本的网络安全防护XSS、CSRF、SQL injection等
 
 ## 工作环境
 
